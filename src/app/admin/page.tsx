@@ -1,0 +1,395 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { ShieldCheck, Users, Building, CheckCircle, XCircle, Loader2, AlertCircle, FileText } from "lucide-react";
+import { useAuth } from "@/context/authcontext";
+import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
+
+interface PendingAgent {
+  id: string;
+  full_name: string;
+  phone: string;
+  email?: string;
+  verified: boolean;
+  created_at: string;
+}
+
+interface PendingListing {
+  id: string;
+  title: string;
+  price: number;
+  category: string;
+  listing_type: string;
+  address: string;
+  city: string;
+  posted_by_name?: string;
+  status: string;
+}
+
+export default function AdminPage() {
+  const router = useRouter();
+  const { user, profile, loading: authLoading } = useAuth();
+  
+  const [activeTab, setActiveTab] = useState<"agents" | "listings">("agents");
+  const [pendingAgents, setPendingAgents] = useState<PendingAgent[]>([]);
+  const [pendingListings, setPendingListings] = useState<PendingListing[]>([]);
+  
+  const [loadingData, setLoadingData] = useState(true);
+  const [actioningId, setActioningId] = useState<string | null>(null);
+  const [feedbackMsg, setFeedbackMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Security guard
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user || !profile || !profile.is_admin) {
+        router.push("/login");
+      }
+    }
+  }, [user, profile, authLoading, router]);
+
+  // Load moderation queues
+  useEffect(() => {
+    if (authLoading || !profile?.is_admin) return;
+
+    const loadQueue = async () => {
+      setLoadingData(true);
+      
+      if (!isSupabaseConfigured()) {
+        // Load mock queues for demo mode
+        setPendingAgents([
+          { id: "mock-agent-1", full_name: "John Jameson", phone: "(555) 321-9876", email: "john.j@vertex.com", verified: false, created_at: new Date().toISOString() },
+          { id: "mock-agent-2", full_name: "Clara Oswald", phone: "(555) 765-4321", email: "clara@vertex.com", verified: false, created_at: new Date().toISOString() },
+        ]);
+        setPendingListings([
+          { id: "mock-listing-1", title: "Modernist Concrete Loft", price: 1250000, category: "residential", listing_type: "sale", address: "505 Concrete Ave", city: "Los Angeles", posted_by_name: " Sarah Jenkins", status: "pending" },
+          { id: "mock-listing-2", title: "Prime Office Floor", price: 15000, category: "commercial", listing_type: "lease", address: "100 Wilshire Blvd", city: "Los Angeles", posted_by_name: "Marcus Vance", status: "pending" },
+        ]);
+        setLoadingData(false);
+        return;
+      }
+
+      try {
+        // Fetch unverified profiles
+        const { data: agents, error: agentsError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("role", "agent")
+          .eq("verified", false);
+
+        if (agentsError) throw agentsError;
+        setPendingAgents(agents || []);
+
+        // Fetch pending listings
+        const { data: listings, error: listingsError } = await supabase
+          .from("listings")
+          .select(`
+            id,
+            title,
+            price,
+            category,
+            listing_type,
+            address,
+            city,
+            status,
+            profiles (
+              full_name
+            )
+          `)
+          .eq("status", "pending");
+
+        if (listingsError) throw listingsError;
+
+        const formattedListings = (listings || []).map((l: Record<string, unknown>) => ({
+          id: String(l.id),
+          title: String(l.title),
+          price: Number(l.price),
+          category: String(l.category),
+          listing_type: String(l.listing_type),
+          address: String(l.address),
+          city: String(l.city),
+          posted_by_name: (l.profiles as { full_name?: string })?.full_name || "Unknown Agent",
+          status: String(l.status),
+        }));
+        
+        setPendingListings(formattedListings);
+      } catch (err) {
+        console.error("Error loading admin queue:", err);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    loadQueue();
+  }, [authLoading, profile]);
+
+  const handleVerifyAgent = async (agentId: string, approve: boolean) => {
+    setActioningId(agentId);
+    setFeedbackMsg(null);
+
+    if (!isSupabaseConfigured()) {
+      // Mock action
+      await new Promise((r) => setTimeout(r, 800));
+      setPendingAgents(prev => prev.filter(a => a.id !== agentId));
+      setFeedbackMsg({ type: "success", text: approve ? "Agent approved successfully (Mock)." : "Agent rejected successfully (Mock)." });
+      setActioningId(null);
+      return;
+    }
+
+    try {
+      if (approve) {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ verified: true })
+          .eq("id", agentId);
+
+        if (error) throw error;
+        setPendingAgents(prev => prev.filter(a => a.id !== agentId));
+        setFeedbackMsg({ type: "success", text: "Agent has been verified successfully." });
+      } else {
+        // Delete rejected agent profile/user metadata (or just delete profile row)
+        const { error } = await supabase
+          .from("profiles")
+          .delete()
+          .eq("id", agentId);
+
+        if (error) throw error;
+        setPendingAgents(prev => prev.filter(a => a.id !== agentId));
+        setFeedbackMsg({ type: "success", text: "Agent account has been rejected and deleted." });
+      }
+    } catch (err: unknown) {
+      setFeedbackMsg({ type: "error", text: (err as Error).message || "An error occurred." });
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  const handleModerateListing = async (listingId: string, status: "approved" | "rejected") => {
+    setActioningId(listingId);
+    setFeedbackMsg(null);
+
+    if (!isSupabaseConfigured()) {
+      // Mock action
+      await new Promise((r) => setTimeout(r, 800));
+      setPendingListings(prev => prev.filter(l => l.id !== listingId));
+      setFeedbackMsg({ type: "success", text: `Listing ${status} successfully (Mock).` });
+      setActioningId(null);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("listings")
+        .update({ status })
+        .eq("id", listingId);
+
+      if (error) throw error;
+      setPendingListings(prev => prev.filter(l => l.id !== listingId));
+      setFeedbackMsg({ type: "success", text: `Listing has been ${status} successfully.` });
+    } catch (err: unknown) {
+      setFeedbackMsg({ type: "error", text: (err as Error).message || "An error occurred." });
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  if (authLoading || !profile?.is_admin) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <span className="text-xs font-semibold text-slate-500">Checking credentials...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 py-32">
+      <div className="mx-auto max-w-6xl px-6 lg:px-8">
+        
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 border-b border-slate-200 pb-8">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-2xs font-extrabold tracking-widest uppercase text-blue-600 border border-blue-500/20">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Administrative Control
+            </span>
+            <h1 className="mt-4 text-3xl font-extrabold font-serif text-slate-900 tracking-tight">
+              Moderation Dashboard
+            </h1>
+            <p className="mt-1 text-xs text-slate-500">
+              Approve agent profiles and moderate submitted listings.
+            </p>
+          </div>
+
+          {!isSupabaseConfigured() && (
+            <div className="rounded-xl bg-amber-50 border border-amber-200 p-3.5 text-3xs font-semibold text-amber-800 flex gap-2 items-center">
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+              Demo Mode active (Simulated DB Queue)
+            </div>
+          )}
+        </div>
+
+        {/* Tab Selector */}
+        <div className="flex border-b border-slate-200 mb-8 gap-4">
+          <button
+            onClick={() => setActiveTab("agents")}
+            className={`flex items-center gap-2 pb-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === "agents"
+                ? "border-blue-600 text-blue-600 font-extrabold"
+                : "border-transparent text-slate-400 hover:text-slate-900"
+            }`}
+          >
+            <Users className="h-4 w-4" />
+            Pending Agents ({pendingAgents.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("listings")}
+            className={`flex items-center gap-2 pb-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === "listings"
+                ? "border-blue-600 text-blue-600 font-extrabold"
+                : "border-transparent text-slate-400 hover:text-slate-900"
+            }`}
+          >
+            <Building className="h-4 w-4" />
+            Pending Listings ({pendingListings.length})
+          </button>
+        </div>
+
+        {/* Action Feedback Alerts */}
+        {feedbackMsg && (
+          <div
+            className={`mb-6 p-4 rounded-xl border text-xs flex gap-2 items-center ${
+              feedbackMsg.type === "success"
+                ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                : "bg-red-50 border-red-200 text-red-800"
+            }`}
+          >
+            {feedbackMsg.type === "success" ? <CheckCircle className="h-4.5 w-4.5 text-emerald-500" /> : <AlertCircle className="h-4.5 w-4.5 text-red-500" />}
+            <span className="font-semibold">{feedbackMsg.text}</span>
+          </div>
+        )}
+
+        {/* Queues Display */}
+        {loadingData ? (
+          <div className="py-20 flex justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
+          </div>
+        ) : (
+          <AnimatePresence mode="wait">
+            {activeTab === "agents" ? (
+              <motion.div
+                key="agents"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 15 }}
+                className="space-y-4"
+              >
+                {pendingAgents.length > 0 ? (
+                  pendingAgents.map((agent) => (
+                    <div
+                      key={agent.id}
+                      className="bg-white rounded-2xl p-6 border border-slate-100 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-6"
+                    >
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-bold text-slate-900">{agent.full_name}</h3>
+                        <p className="text-3xs text-slate-400 uppercase font-semibold">Registered: {new Date(agent.created_at).toLocaleDateString()}</p>
+                        <div className="pt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 font-medium">
+                          <span>Phone: {agent.phone}</span>
+                          {agent.email && <span>Email: {agent.email}</span>}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleVerifyAgent(agent.id, true)}
+                          disabled={actioningId === agent.id}
+                          className="flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 text-2xs uppercase tracking-wider transition-colors disabled:bg-slate-200"
+                        >
+                          {actioningId === agent.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                          Verify
+                        </button>
+                        <button
+                          onClick={() => handleVerifyAgent(agent.id, false)}
+                          disabled={actioningId === agent.id}
+                          className="flex items-center gap-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 hover:border-red-300 font-bold px-4 py-2 text-2xs uppercase tracking-wider transition-colors disabled:bg-slate-200"
+                        >
+                          {actioningId === agent.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-20 bg-white border border-dashed rounded-3xl p-6">
+                    <Users className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+                    <p className="text-sm text-slate-500 font-medium">No pending agent verification requests.</p>
+                  </div>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="listings"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 15 }}
+                className="space-y-4"
+              >
+                {pendingListings.length > 0 ? (
+                  pendingListings.map((listing) => (
+                    <div
+                      key={listing.id}
+                      className="bg-white rounded-2xl p-6 border border-slate-100 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-6"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="rounded-md bg-blue-50 text-blue-700 px-2 py-0.5 text-3xs font-extrabold uppercase tracking-wider border border-blue-100">
+                            {listing.listing_type === "lease" ? "For Lease" : "For Sale"}
+                          </span>
+                          <span className="text-3xs text-slate-400 font-bold uppercase tracking-widest">{listing.category}</span>
+                        </div>
+                        <h3 className="text-sm font-bold text-slate-900 mt-1">{listing.title}</h3>
+                        <p className="text-xs text-slate-500">{listing.address}, {listing.city}</p>
+                        <div className="pt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 font-medium">
+                          <span>Price: <strong className="text-slate-900">${listing.price.toLocaleString()}</strong></span>
+                          <span>Submitted By: <strong className="text-blue-600">{listing.posted_by_name}</strong></span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleModerateListing(listing.id, "approved")}
+                          disabled={actioningId === listing.id}
+                          className="flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 text-2xs uppercase tracking-wider transition-colors disabled:bg-slate-200"
+                        >
+                          {actioningId === listing.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleModerateListing(listing.id, "rejected")}
+                          disabled={actioningId === listing.id}
+                          className="flex items-center gap-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 text-2xs uppercase tracking-wider transition-colors disabled:bg-slate-200"
+                        >
+                          {actioningId === listing.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-20 bg-white border border-dashed rounded-3xl p-6">
+                    <FileText className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+                    <p className="text-sm text-slate-500 font-medium">No listings pending moderation.</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
+
+      </div>
+    </div>
+  );
+}

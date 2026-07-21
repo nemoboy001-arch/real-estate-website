@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   Bed,
   Bath,
@@ -16,12 +17,13 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { properties, agents } from "@/data/mockData";
+import { properties, agents, Property } from "@/data/mockData";
 import MortgageCalculator from "@/components/property/MortgageCalculator";
 import ContactAgentForm from "@/components/property/ContactAgentForm";
 import MapMockup from "@/components/property/MapMockup";
 import PropertyCard from "@/components/property/PropertyCard";
 import { useFavorites } from "@/context/favoritecontext";
+import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 
 interface PropertyDetailProps {
   params: Promise<{ id: string }>;
@@ -29,7 +31,50 @@ interface PropertyDetailProps {
 
 export default function PropertyDetailPage({ params }: PropertyDetailProps) {
   const { id } = React.use(params);
-  const property = properties.find((p) => p.id === id);
+  const [dbProperty, setDbProperty] = useState<Property | null>(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    const fetchProperty = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("listings")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (error || !data) return;
+
+        setDbProperty({
+          id: data.id,
+          title: data.title,
+          category: data.category,
+          listingType: data.listing_type,
+          price: Number(data.price),
+          beds: data.beds ? Number(data.beds) : undefined,
+          baths: data.baths ? Number(data.baths) : undefined,
+          sqft: Number(data.sqft),
+          location: {
+            address: data.address,
+            city: data.city,
+            zip: data.zip,
+          },
+          images: data.images && data.images.length > 0 ? data.images : ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80"],
+          amenities: ["Approved Asset", "Verified Listing"],
+          agentId: data.posted_by,
+          description: data.description,
+          featured: true,
+        });
+      } catch (err) {
+        console.error("Error fetching single listing from Supabase:", err);
+      }
+    };
+
+    fetchProperty();
+  }, [id]);
+
+  const property = dbProperty || properties.find((p) => p.id === id);
 
   const { toggleFavorite, isFavorite } = useFavorites();
   const liked = property ? isFavorite(property.id) : false;

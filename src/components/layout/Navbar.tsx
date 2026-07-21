@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, Sparkles, Building, Key, Home, Heart, Scale } from "lucide-react";
+import { Menu, X, ChevronDown, Sparkles, Building, Key, Home, Heart, Scale, PlusCircle, ShieldCheck, LogOut, LogIn } from "lucide-react";
 import { useFavorites } from "@/context/favoritecontext";
 import { useCompare } from "@/context/comparecontext";
+import { useAuth } from "@/context/authcontext";
 
 const navigation = [
   { name: "About Us", href: "/about" },
@@ -28,6 +29,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const { favorites } = useFavorites();
   const { compareList } = useCompare();
+  const { user, profile, signOut } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -174,7 +176,7 @@ export default function Navbar() {
         </div>
 
         {/* CALL TO ACTION & SAVED ITEMS */}
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-x-5">
+        <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-x-4">
           {/* Favorites Link */}
           <Link
             href="/favorites"
@@ -207,16 +209,47 @@ export default function Navbar() {
             )}
           </Link>
 
-          <Link
-            href="/contact"
-            className={`rounded-full px-5 py-2 text-xs font-bold tracking-wider uppercase shadow-md transition-smooth hover:scale-105 active:scale-95 ${
-              isLuxuryPage
-                ? "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold"
-                : "bg-slate-900 text-white hover:bg-slate-800"
-            }`}
-          >
-            Enquire Now
-          </Link>
+          {/* User Auth controls */}
+          {user ? (
+            <div className="flex items-center gap-3">
+              {profile?.is_admin && (
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center gap-1 rounded-full bg-blue-600 text-white px-3 py-1.5 text-2xs font-extrabold uppercase tracking-wider shadow-sm hover:bg-blue-700 transition-colors"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Admin
+                </Link>
+              )}
+
+              <Link
+                href="/listings/new"
+                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-2xs font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
+              >
+                <PlusCircle className="h-3.5 w-3.5 text-blue-600" />
+                Submit Listing
+              </Link>
+
+              <button
+                onClick={() => signOut()}
+                className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                title="Log Out"
+              >
+                <LogOut className="h-4.5 w-4.5" />
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className={`rounded-full px-5 py-2 text-xs font-bold tracking-wider uppercase shadow-md transition-smooth hover:scale-105 active:scale-95 ${
+                isLuxuryPage
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold"
+                  : "bg-slate-900 text-white hover:bg-slate-800"
+              }`}
+            >
+              Agent Portal
+            </Link>
+          )}
         </div>
       </nav>
 
@@ -323,6 +356,44 @@ export default function Navbar() {
                             </span>
                           )}
                         </Link>
+                        {/* Auth / Agent links */}
+                        <div className="border-t border-slate-500/10 my-3 pt-3 space-y-1">
+                          {user ? (
+                            <>
+                              <Link
+                                href="/listings/new"
+                                className="flex items-center gap-2 rounded-lg py-2 px-3 text-base font-semibold text-blue-600 hover:bg-slate-50 dark:hover:bg-slate-900"
+                              >
+                                <PlusCircle className="h-5 w-5" />
+                                Submit New Listing
+                              </Link>
+                              {profile?.is_admin && (
+                                <Link
+                                  href="/admin"
+                                  className="flex items-center gap-2 rounded-lg py-2 px-3 text-base font-semibold text-purple-600 hover:bg-slate-50 dark:hover:bg-slate-900"
+                                >
+                                  <ShieldCheck className="h-5 w-5" />
+                                  Admin Control Panel
+                                </Link>
+                              )}
+                              <button
+                                onClick={() => signOut()}
+                                className="flex w-full items-center gap-2 rounded-lg py-2 px-3 text-base font-semibold text-red-600 hover:bg-slate-50 dark:hover:bg-slate-900 text-left"
+                              >
+                                <LogOut className="h-5 w-5" />
+                                Log Out
+                              </button>
+                            </>
+                          ) : (
+                            <Link
+                              href="/login"
+                              className="flex items-center gap-2 rounded-lg py-2 px-3 text-base font-semibold text-blue-600 hover:bg-slate-50 dark:hover:bg-slate-900"
+                            >
+                              <LogIn className="h-5 w-5" />
+                              Agent Portal Sign In
+                            </Link>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

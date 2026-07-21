@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Mail, Phone, MapPin, ArrowRight } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export default function Footer() {

@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import { CompareProvider } from "@/context/comparecontext";
 import CompareBar from "@/components/compare/comparebar";
 import { FavoriteProvider } from "@/context/favoritecontext";
+import { AuthProvider } from "@/context/authcontext";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -51,14 +52,16 @@ export default function RootLayout({
       className={`${inter.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-slate-50 text-slate-900">
-  <CompareProvider>
-     <FavoriteProvider>
-    <Navbar />
-    <main className="flex-grow">{children}</main>
-    <Footer />
-    <CompareBar />
-    </FavoriteProvider>
-  </CompareProvider>
+  <AuthProvider>
+    <CompareProvider>
+       <FavoriteProvider>
+      <Navbar />
+      <main className="flex-grow">{children}</main>
+      <Footer />
+      <CompareBar />
+      </FavoriteProvider>
+    </CompareProvider>
+  </AuthProvider>
 </body>
     </html>
   );

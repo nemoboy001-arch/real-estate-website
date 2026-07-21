@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight, ShieldAlert, Award, EyeOff, ShieldCheck } from "lucide-react";
+import { Sparkles, Award, EyeOff, ShieldCheck } from "lucide-react";
 import { properties } from "@/data/mockData";
 import PropertyCard from "@/components/property/PropertyCard";
 

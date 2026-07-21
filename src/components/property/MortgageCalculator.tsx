@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DollarSign, Percent, Calculator } from "lucide-react";
+import { Calculator } from "lucide-react";
 
 interface MortgageCalculatorProps {
   propertyPrice: number;

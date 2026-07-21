@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Users, ShieldAlert, Award } from "lucide-react";
+import { Users } from "lucide-react";
 import { agents } from "@/data/mockData";
 import AgentCard from "@/components/agent/AgentCard";
 

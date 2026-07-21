@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Search, MapPin, Building, Key, Sparkles } from "lucide-react";
+import { Search, MapPin, Building, Sparkles } from "lucide-react";
 
 export default function Hero() {
   const router = useRouter();

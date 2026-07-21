@@ -7,6 +7,7 @@ import { LayoutGrid, List, SlidersHorizontal, Info } from "lucide-react";
 import PropertyCard from "@/components/property/PropertyCard";
 import SearchFilterBar, { FilterState } from "@/components/property/SearchFilterBar";
 import { properties, Property } from "@/data/mockData";
+import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 
 // Initial filter settings
 const initialFilters: FilterState = {
@@ -27,6 +28,51 @@ function ListingsContent() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(true);
   const [filters, setFilters] = useState<FilterState>(initialFilters);
+  const [supabaseListings, setSupabaseListings] = useState<Property[]>([]);
+
+  // Fetch approved listings from Supabase
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    const fetchListings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("listings")
+          .select("*")
+          .eq("status", "approved");
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const mapped: Property[] = data.map((item: Record<string, unknown>) => ({
+            id: String(item.id),
+            title: String(item.title),
+            category: item.category as Property["category"],
+            listingType: item.listing_type as Property["listingType"],
+            price: Number(item.price),
+            beds: item.beds ? Number(item.beds) : undefined,
+            baths: item.baths ? Number(item.baths) : undefined,
+            sqft: Number(item.sqft),
+            location: {
+              address: String(item.address),
+              city: String(item.city),
+              zip: String(item.zip),
+            },
+            images: (item.images as string[]) && (item.images as string[]).length > 0 ? (item.images as string[]) : ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80"],
+            amenities: ["Approved Asset", "Verified Listing"],
+            agentId: String(item.posted_by),
+            description: String(item.description),
+            featured: true,
+          }));
+          setSupabaseListings(mapped);
+        }
+      } catch (err) {
+        console.error("Error querying Supabase approved listings:", err);
+      }
+    };
+
+    fetchListings();
+  }, []);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -67,7 +113,8 @@ function ListingsContent() {
 
   // Perform filtration logic calculated on each render
   const filteredListings = (() => {
-    let result = [...properties];
+    const combined = supabaseListings.length > 0 ? [...supabaseListings, ...properties] : properties;
+    let result = [...combined];
 
     // Search query check
     if (filters.search) {
