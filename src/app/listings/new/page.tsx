@@ -5,7 +5,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import { PlusCircle, Info, Image as ImageIcon, MapPin, Building, Ruler, HelpCircle, Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { PlusCircle, Info, Image as ImageIcon, MapPin, Building, Ruler, HelpCircle, Loader2, AlertCircle, CheckCircle, FileText, Upload } from "lucide-react";
 import { useAuth } from "@/context/authcontext";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 
@@ -26,6 +26,12 @@ const listingSchema = z.object({
 
 type ListingFormData = z.infer<typeof listingSchema>;
 
+function generateFileName(userId: string | undefined, fileExt: string | undefined) {
+  const timestamp = Date.now();
+  const randomStr = Math.random().toString(36).substring(2, 8);
+  return `${userId || "agent"}_${timestamp}_${randomStr}.${fileExt || "pdf"}`;
+}
+
 export default function NewListingPage() {
   const router = useRouter();
   const { user, profile, loading: authLoading } = useAuth();
@@ -33,6 +39,21 @@ export default function NewListingPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [documentError, setDocumentError] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        setDocumentError("File size exceeds 10MB limit.");
+        setDocumentFile(null);
+        return;
+      }
+      setDocumentError(null);
+      setDocumentFile(file);
+    }
+  };
 
   const {
     register,
@@ -58,6 +79,13 @@ export default function NewListingPage() {
 
   const onSubmit = async (data: ListingFormData) => {
     setError(null);
+    setDocumentError(null);
+
+    if (!documentFile) {
+      setDocumentError("Proof-of-ownership document is required (Title Deed, Certificate of Occupancy, or Mandate).");
+      return;
+    }
+
     setLoading(true);
 
     // Process images string to array of clean URLs
@@ -68,6 +96,36 @@ export default function NewListingPage() {
 
     const bedsCount = data.beds ? Number(data.beds) : undefined;
     const bathsCount = data.baths ? Number(data.baths) : undefined;
+
+    let proofDocumentUrl = "";
+
+    if (!isSupabaseConfigured()) {
+      // Mock submit
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      proofDocumentUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+    } else {
+      try {
+        const fileExt = documentFile.name.split(".").pop();
+        const fileName = generateFileName(user?.id, fileExt);
+        const filePath = `documents/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("listing-documents")
+          .upload(filePath, documentFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabase.storage
+          .from("listing-documents")
+          .getPublicUrl(filePath);
+
+        proofDocumentUrl = publicUrlData.publicUrl;
+      } catch (err: unknown) {
+        setError("Failed to upload proof of ownership document: " + ((err as Error).message || "Storage error."));
+        setLoading(false);
+        return;
+      }
+    }
 
     const payload = {
       title: data.title,
@@ -84,19 +142,14 @@ export default function NewListingPage() {
       images: imageList.length > 0 ? imageList : ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80"],
       posted_by: user?.id,
       status: "pending",
+      proof_document_url: proofDocumentUrl,
     };
 
-    if (!isSupabaseConfigured()) {
-      // Mock submit
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setLoading(false);
-      setSuccess(true);
-      return;
-    }
-
     try {
-      const { error: insertError } = await supabase.from("listings").insert(payload);
-      if (insertError) throw insertError;
+      if (isSupabaseConfigured()) {
+        const { error: insertError } = await supabase.from("listings").insert(payload);
+        if (insertError) throw insertError;
+      }
       setSuccess(true);
     } catch (err: unknown) {
       setError((err as Error).message || "An error occurred while creating the listing.");
@@ -370,6 +423,46 @@ export default function NewListingPage() {
                   Example: https://images.unsplash.com/photo-1613490493576-7fde63acd811, https://images.unsplash.com/photo-1613977257363-707ba9348227
                 </p>
                 {errors.images && <p className="text-3xs text-red-500 mt-1">{errors.images.message}</p>}
+              </div>
+            </div>
+
+            {/* 4. Proof of Ownership Document Upload */}
+            <div className="space-y-4 pt-6 border-t border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center gap-2">
+                <FileText className="h-4.5 w-4.5 text-blue-600" />
+                Proof of Ownership Verification (Required)
+              </h3>
+              
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+                  Upload Title Deed, Certificate of Occupancy, or Sales/Letting Mandate
+                </label>
+                <div className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors ${documentError ? "border-red-400 bg-red-50/50" : documentFile ? "border-emerald-400 bg-emerald-50/30" : "border-slate-200 hover:border-blue-400 bg-slate-50/50"}`}>
+                  <input
+                    type="file"
+                    id="proof-document-upload"
+                    accept=".pdf,.png,.jpg,.jpeg,.docx"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <label htmlFor="proof-document-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${documentFile ? "bg-emerald-100 text-emerald-600" : "bg-blue-50 text-blue-600"}`}>
+                      {documentFile ? <CheckCircle className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+                    </div>
+                    {documentFile ? (
+                      <div>
+                        <p className="text-xs font-bold text-slate-900">{documentFile.name}</p>
+                        <p className="text-3xs text-emerald-600 font-semibold mt-0.5">Document attached ({(documentFile.size / 1024 / 1024).toFixed(2)} MB)</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-xs font-bold text-slate-800">Click to select document file</p>
+                        <p className="text-3xs text-slate-400 mt-0.5">Supported formats: PDF, PNG, JPG, DOCX (Max 10MB)</p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+                {documentError && <p className="text-3xs text-red-500 font-semibold mt-1">{documentError}</p>}
               </div>
             </div>
 

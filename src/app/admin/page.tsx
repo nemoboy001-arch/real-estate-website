@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, Users, Building, CheckCircle, XCircle, Loader2, AlertCircle, FileText } from "lucide-react";
+import { ShieldCheck, Users, Building, CheckCircle, XCircle, Loader2, AlertCircle, FileText, ExternalLink } from "lucide-react";
 import { useAuth } from "@/context/authcontext";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 
@@ -26,6 +26,7 @@ interface PendingListing {
   city: string;
   posted_by_name?: string;
   status: string;
+  proof_document_url?: string;
 }
 
 export default function AdminPage() {
@@ -63,8 +64,8 @@ export default function AdminPage() {
           { id: "mock-agent-2", full_name: "Clara Oswald", phone: "(555) 765-4321", email: "clara@vertex.com", verified: false, created_at: new Date().toISOString() },
         ]);
         setPendingListings([
-          { id: "mock-listing-1", title: "Modernist Concrete Loft", price: 1250000, category: "residential", listing_type: "sale", address: "505 Concrete Ave", city: "Los Angeles", posted_by_name: " Sarah Jenkins", status: "pending" },
-          { id: "mock-listing-2", title: "Prime Office Floor", price: 15000, category: "commercial", listing_type: "lease", address: "100 Wilshire Blvd", city: "Los Angeles", posted_by_name: "Marcus Vance", status: "pending" },
+          { id: "mock-listing-1", title: "Modernist Concrete Loft", price: 1250000, category: "residential", listing_type: "sale", address: "505 Concrete Ave", city: "Los Angeles", posted_by_name: "Sarah Jenkins", status: "pending", proof_document_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
+          { id: "mock-listing-2", title: "Prime Office Floor", price: 15000, category: "commercial", listing_type: "lease", address: "100 Wilshire Blvd", city: "Los Angeles", posted_by_name: "Marcus Vance", status: "pending", proof_document_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
         ]);
         setLoadingData(false);
         return;
@@ -93,6 +94,7 @@ export default function AdminPage() {
             address,
             city,
             status,
+            proof_document_url,
             profiles (
               full_name
             )
@@ -111,6 +113,7 @@ export default function AdminPage() {
           city: String(l.city),
           posted_by_name: (l.profiles as { full_name?: string })?.full_name || "Unknown Agent",
           status: String(l.status),
+          proof_document_url: l.proof_document_url ? String(l.proof_document_url) : undefined,
         }));
         
         setPendingListings(formattedListings);
@@ -352,10 +355,24 @@ export default function AdminPage() {
                         </div>
                         <h3 className="text-sm font-bold text-slate-900 mt-1">{listing.title}</h3>
                         <p className="text-xs text-slate-500">{listing.address}, {listing.city}</p>
-                        <div className="pt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 font-medium">
+                        <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 font-medium">
                           <span>Price: <strong className="text-slate-900">${listing.price.toLocaleString()}</strong></span>
                           <span>Submitted By: <strong className="text-blue-600">{listing.posted_by_name}</strong></span>
                         </div>
+                        {listing.proof_document_url && (
+                          <div className="pt-2">
+                            <a
+                              href={listing.proof_document_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-3xs font-extrabold uppercase tracking-wider text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors shadow-2xs"
+                            >
+                              <FileText className="h-3.5 w-3.5" />
+                              Inspect Proof of Ownership Document
+                              <ExternalLink className="h-3 w-3 ml-0.5 opacity-70" />
+                            </a>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex gap-2">

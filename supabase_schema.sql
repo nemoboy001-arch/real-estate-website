@@ -1,5 +1,5 @@
 -- Vertex Realty Supabase Database Schema
--- Run this script in the Supabase SQL Editor to configure tables, triggers, and Row Level Security.
+-- Run this script in the Supabase SQL Editor to configure tables, triggers, Storage, and Row Level Security.
 
 -- 1. Create Profiles Table
 create table if not exists public.profiles (
@@ -15,7 +15,7 @@ create table if not exists public.profiles (
 -- Enable RLS on Profiles
 alter table public.profiles enable row level security;
 
--- 2. Create Listings Table
+-- 2. Create Listings Table (with proof_document_url)
 create table if not exists public.listings (
   id uuid primary key default gen_random_uuid(),
   title text not null,
@@ -32,13 +32,22 @@ create table if not exists public.listings (
   images text[] not null default '{}',
   posted_by uuid references public.profiles(id) on delete cascade not null,
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  proof_document_url text,
   created_at timestamp with time zone default now()
 );
+
+-- Add column if table already existed without it
+alter table public.listings add column if not exists proof_document_url text;
 
 -- Enable RLS on Listings
 alter table public.listings enable row level security;
 
--- 3. Trigger to Auto-create Profile on Sign-up
+-- 3. Storage Bucket Creation for Proof Documents
+insert into storage.buckets (id, name, public)
+values ('listing-documents', 'listing-documents', true)
+on conflict (id) do nothing;
+
+-- 4. Trigger to Auto-create Profile on Sign-up
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
@@ -61,7 +70,7 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- 4. Helper Function to Check Admin Privilege Without Recursion
+-- 5. Helper Function to Check Admin Privilege Without Recursion
 create or replace function public.is_admin()
 returns boolean as $$
 begin
@@ -72,9 +81,9 @@ begin
 end;
 $$ language plpgsql security definer;
 
--- 5. Row Level Security Policies for Profiles
+-- 6. Row Level Security Policies for Profiles
 
--- Allow public read access to all profiles (to show agent bios on listing detail pages)
+-- Allow public read access to all profiles
 create policy "Allow public read access on profiles"
 on public.profiles for select
 using (true);
@@ -89,12 +98,12 @@ with check (
   and is_admin = (select is_admin from public.profiles where id = auth.uid())
 );
 
--- Allow admins full control over all profiles (updating verified status or role)
+-- Allow admins full control over all profiles
 create policy "Allow admins to manage all profiles"
 on public.profiles for all
 using (public.is_admin());
 
--- 6. Row Level Security Policies for Listings
+-- 7. Row Level Security Policies for Listings
 
 -- Allow anyone to read approved listings, or users to read their own pending/rejected listings
 create policy "Allow users to read listings"
@@ -113,7 +122,7 @@ with check (
   and (select verified from public.profiles where id = auth.uid()) = true
 );
 
--- Allow users to update their own listings (but forces status to reset to 'pending' unless they are admins)
+-- Allow users to update their own listings (resets to pending unless admin)
 create policy "Allow owners to update own listings"
 on public.listings for update
 using (auth.uid() = posted_by or public.is_admin())
@@ -126,3 +135,23 @@ with check (
 create policy "Allow owners to delete listings"
 on public.listings for delete
 using (auth.uid() = posted_by or public.is_admin());
+
+-- 8. Storage Security Policies for listing-documents Bucket
+
+create policy "Allow authenticated verified users to upload documents"
+on storage.objects for insert
+with check (
+  bucket_id = 'listing-documents'
+  and auth.role() = 'authenticated'
+  and (select verified from public.profiles where id = auth.uid()) = true
+);
+
+create policy "Allow admins and document owners to view documents"
+on storage.objects for select
+using (
+  bucket_id = 'listing-documents'
+  and (
+    public.is_admin()
+    or owner = auth.uid()
+  )
+);
