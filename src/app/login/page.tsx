@@ -128,7 +128,15 @@ export default function LoginPage() {
 
           {/* Password */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Password</label>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
+              <Link
+                href="/forgot-password"
+                className="text-3xs font-extrabold uppercase tracking-wider text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
             <div className="relative">
               <Lock className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
@@ -162,11 +170,13 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="text-center pt-4 border-t border-slate-100 text-xs text-slate-500">
-          Don&apos;t have an agent account?{" "}
-          <Link href="/signup" className="font-bold text-blue-600 hover:underline">
-            Register Here
-          </Link>
+        <div className="text-center mt-6">
+          <p className="text-xs text-slate-500">
+            Don&apos;t have an agent account?{" "}
+            <Link href="/signup" className="font-bold text-blue-600 hover:underline">
+              Register Here
+            </Link>
+          </p>
         </div>
       </div>
     </div>
