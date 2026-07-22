@@ -155,3 +155,31 @@ using (
     or owner = auth.uid()
   )
 );
+
+-- 9. Add Verification & Rejection Memo Fields (Extensions)
+alter table public.profiles add column if not exists nin_document_url text;
+alter table public.listings add column if not exists moderation_memo text;
+
+-- Create identity-documents bucket
+insert into storage.buckets (id, name, public)
+values ('identity-documents', 'identity-documents', true)
+on conflict (id) do nothing;
+
+-- Policies for identity-documents bucket
+create policy "Allow authenticated users to upload identity documents"
+on storage.objects for insert
+with check (
+  bucket_id = 'identity-documents'
+  and auth.role() = 'authenticated'
+);
+
+create policy "Allow admins and owners to view identity documents"
+on storage.objects for select
+using (
+  bucket_id = 'identity-documents'
+  and (
+    public.is_admin()
+    or owner = auth.uid()
+  )
+);
+

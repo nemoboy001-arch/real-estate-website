@@ -5,7 +5,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import { PlusCircle, Info, Image as ImageIcon, MapPin, Building, Ruler, HelpCircle, Loader2, AlertCircle, CheckCircle, FileText, Upload } from "lucide-react";
+import { PlusCircle, Image as ImageIcon, Loader2, CheckCircle, FileText, Upload, AlertCircle, HelpCircle, Ruler } from "lucide-react";
 import { useAuth } from "@/context/authcontext";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 

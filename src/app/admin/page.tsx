@@ -14,6 +14,7 @@ interface PendingAgent {
   email?: string;
   verified: boolean;
   created_at: string;
+  nin_document_url?: string;
 }
 
 interface PendingListing {
@@ -40,6 +41,8 @@ export default function AdminPage() {
   const [loadingData, setLoadingData] = useState(true);
   const [actioningId, setActioningId] = useState<string | null>(null);
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [showMemoModalId, setShowMemoModalId] = useState<string | null>(null);
+  const [rejectionMemoText, setRejectionMemoText] = useState("");
 
   // Security guard
   useEffect(() => {
@@ -60,8 +63,8 @@ export default function AdminPage() {
       if (!isSupabaseConfigured()) {
         // Load mock queues for demo mode
         setPendingAgents([
-          { id: "mock-agent-1", full_name: "John Jameson", phone: "(555) 321-9876", email: "john.j@vertex.com", verified: false, created_at: new Date().toISOString() },
-          { id: "mock-agent-2", full_name: "Clara Oswald", phone: "(555) 765-4321", email: "clara@vertex.com", verified: false, created_at: new Date().toISOString() },
+          { id: "mock-agent-1", full_name: "John Jameson", phone: "(555) 321-9876", email: "john.j@vertex.com", verified: false, created_at: new Date().toISOString(), nin_document_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
+          { id: "mock-agent-2", full_name: "Clara Oswald", phone: "(555) 765-4321", email: "clara@vertex.com", verified: false, created_at: new Date().toISOString(), nin_document_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
         ]);
         setPendingListings([
           { id: "mock-listing-1", title: "Modernist Concrete Loft", price: 1250000, category: "residential", listing_type: "sale", address: "505 Concrete Ave", city: "Los Angeles", posted_by_name: "Sarah Jenkins", status: "pending", proof_document_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
@@ -168,7 +171,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleModerateListing = async (listingId: string, status: "approved" | "rejected") => {
+  const handleModerateListing = async (listingId: string, status: "approved" | "rejected", memo?: string) => {
     setActioningId(listingId);
     setFeedbackMsg(null);
 
@@ -184,7 +187,7 @@ export default function AdminPage() {
     try {
       const { error } = await supabase
         .from("listings")
-        .update({ status })
+        .update({ status, moderation_memo: memo || null })
         .eq("id", listingId);
 
       if (error) throw error;
@@ -303,6 +306,26 @@ export default function AdminPage() {
                           <span>Phone: {agent.phone}</span>
                           {agent.email && <span>Email: {agent.email}</span>}
                         </div>
+                        {agent.nin_document_url ? (
+                          <div className="pt-2">
+                            <a
+                              href={agent.nin_document_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-3xs font-extrabold uppercase tracking-wider text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors shadow-2xs"
+                            >
+                              <FileText className="h-3.5 w-3.5" />
+                              Inspect NIN Identification
+                              <ExternalLink className="h-3 w-3 ml-0.5 opacity-70" />
+                            </a>
+                          </div>
+                        ) : (
+                          <div className="pt-2">
+                            <span className="inline-flex items-center gap-1 text-3xs font-bold text-slate-400 bg-slate-50 border border-slate-200/60 px-2.5 py-1.5 rounded-lg">
+                              No NIN document uploaded yet
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex gap-2">
@@ -375,23 +398,60 @@ export default function AdminPage() {
                         )}
                       </div>
 
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleModerateListing(listing.id, "approved")}
-                          disabled={actioningId === listing.id}
-                          className="flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 text-2xs uppercase tracking-wider transition-colors disabled:bg-slate-200"
-                        >
-                          {actioningId === listing.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleModerateListing(listing.id, "rejected")}
-                          disabled={actioningId === listing.id}
-                          className="flex items-center gap-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 text-2xs uppercase tracking-wider transition-colors disabled:bg-slate-200"
-                        >
-                          {actioningId === listing.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
-                          Reject
-                        </button>
+                      <div className="flex flex-col gap-3 items-end">
+                        {showMemoModalId === listing.id ? (
+                          <div className="w-64 bg-slate-50 border border-slate-200/60 rounded-xl p-3.5 space-y-3">
+                            <label className="block text-3xs font-extrabold uppercase tracking-wider text-slate-500">
+                              Provide Rejection Memo:
+                            </label>
+                            <textarea
+                              rows={2}
+                              value={rejectionMemoText}
+                              onChange={(e) => setRejectionMemoText(e.target.value)}
+                              placeholder="e.g. Verification document is blurry..."
+                              className="w-full rounded-lg border border-slate-200 py-1.5 px-2.5 text-xs outline-hidden focus:ring-1 focus:ring-blue-600/20"
+                            />
+                            <div className="flex justify-end gap-1.5">
+                              <button
+                                onClick={() => setShowMemoModalId(null)}
+                                className="rounded-md bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-2.5 py-1 text-3xs uppercase tracking-wider transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => {
+                                  handleModerateListing(listing.id, "rejected", rejectionMemoText);
+                                  setShowMemoModalId(null);
+                                }}
+                                className="rounded-md bg-red-600 hover:bg-red-700 text-white font-bold px-2.5 py-1 text-3xs uppercase tracking-wider transition-colors"
+                              >
+                                Confirm
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleModerateListing(listing.id, "approved")}
+                              disabled={actioningId === listing.id}
+                              className="flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 text-2xs uppercase tracking-wider transition-colors disabled:bg-slate-200"
+                            >
+                              {actioningId === listing.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowMemoModalId(listing.id);
+                                setRejectionMemoText("");
+                              }}
+                              disabled={actioningId === listing.id}
+                              className="flex items-center gap-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 text-2xs uppercase tracking-wider transition-colors disabled:bg-slate-200"
+                            >
+                              <XCircle className="h-3.5 w-3.5" />
+                              Reject
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))
