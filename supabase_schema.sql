@@ -21,7 +21,7 @@ create table if not exists public.listings (
   title text not null,
   description text not null,
   price numeric not null,
-  category text not null check (category in ('residential', 'luxury', 'rental', 'commercial')),
+  category text not null check (category in ('residential', 'luxury', 'rental', 'commercial', 'land')),
   listing_type text not null check (listing_type in ('sale', 'lease')),
   beds integer,
   baths integer,

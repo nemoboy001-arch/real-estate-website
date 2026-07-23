@@ -60,6 +60,7 @@ export default function SearchFilterBar({
               <option value="luxury">Luxury Estates</option>
               <option value="rental">Rentals</option>
               <option value="commercial">Commercial</option>
+              <option value="land">Land Sites</option>
             </select>
           </div>
         </div>

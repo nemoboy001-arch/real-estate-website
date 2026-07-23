@@ -13,7 +13,7 @@ const listingSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
   description: z.string().min(20, "Description must be at least 20 characters"),
   price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Price must be a positive number"),
-  category: z.enum(["residential", "luxury", "rental", "commercial"]),
+  category: z.enum(["residential", "luxury", "rental", "commercial", "land"]),
   listingType: z.enum(["sale", "lease"]),
   beds: z.string().optional(),
   baths: z.string().optional(),
@@ -133,8 +133,8 @@ export default function NewListingPage() {
       price: Number(data.price),
       category: data.category,
       listing_type: data.listingType,
-      beds: data.category !== "commercial" ? bedsCount : null,
-      baths: data.category !== "commercial" ? bathsCount : null,
+      beds: (data.category !== "commercial" && data.category !== "land") ? bedsCount : null,
+      baths: (data.category !== "commercial" && data.category !== "land") ? bathsCount : null,
       sqft: Number(data.sqft),
       address: data.address,
       city: data.city,
@@ -269,6 +269,7 @@ export default function NewListingPage() {
                     <option value="luxury">Luxury Estates</option>
                     <option value="rental">Rentals</option>
                     <option value="commercial">Commercial</option>
+                    <option value="land">Land Site</option>
                   </select>
                 </div>
 
@@ -336,8 +337,8 @@ export default function NewListingPage() {
                   {errors.sqft && <p className="text-3xs text-red-500 mt-1">{errors.sqft.message}</p>}
                 </div>
 
-                {/* Beds / Baths (conditional on category !== commercial) */}
-                {selectedCategory !== "commercial" ? (
+                {/* Beds / Baths (conditional on category !== commercial & category !== land) */}
+                {selectedCategory !== "commercial" && selectedCategory !== "land" ? (
                   <>
                     <div>
                       <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">Bedrooms</label>

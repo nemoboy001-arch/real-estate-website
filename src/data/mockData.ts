@@ -1,7 +1,7 @@
 export interface Property {
   id: string;
   title: string;
-  category: 'residential' | 'luxury' | 'rental' | 'commercial';
+  category: 'residential' | 'luxury' | 'rental' | 'commercial' | 'land';
   listingType: 'sale' | 'lease';
   price: number;
   beds?: number;
@@ -375,6 +375,48 @@ export const properties: Property[] = [
     description: 'A premier corporate headquarters asset on Wilshire Blvd. This standalone architectural structure offers grand visibility, secure access lobby, open floor executive workspaces, and an private underground parking deck.',
     featured: true,
     yearBuilt: 2012,
+  },
+  {
+    id: 'prop-land-1',
+    title: 'Prime Malibu Canyon Acreage',
+    category: 'land',
+    listingType: 'sale',
+    price: 3200000,
+    sqft: 217800, // 5 Acres
+    location: {
+      address: '2400 Malibu Canyon Rd',
+      city: 'Malibu',
+      zip: '90265',
+      coordinates: { lat: 34.0471, lng: -118.6923 },
+    },
+    images: [
+      'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+    ],
+    amenities: ['Ocean Views', 'Geotechnical Survey Complete', 'Grading Permit Pending', 'Water Well Connected'],
+    agentId: 'agent-1',
+    description: 'An unparalleled development opportunity overlooking the Pacific Ocean. Over 5 pristine acres situated in the heart of Malibu. Concept designs for a modern 10,000 sq ft architectural estate are included.',
+    featured: true,
+  },
+  {
+    id: 'prop-land-2',
+    title: 'Beverly Hills Crest Development Site',
+    category: 'land',
+    listingType: 'sale',
+    price: 8900000,
+    sqft: 87120, // 2 Acres
+    location: {
+      address: '1420 Benedict Canyon Dr',
+      city: 'Beverly Hills',
+      zip: '90210',
+      coordinates: { lat: 34.1032, lng: -118.4231 },
+    },
+    images: [
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+    ],
+    amenities: ['360 City Views', 'Gated Access Road', 'Utilities at Street', 'Fully Cleared Lot'],
+    agentId: 'agent-1',
+    description: 'Rare offering of a massive double lot building site on a private promontory in Beverly Hills. Boasting sweeping 360-degree views of the canyon and city skyline.',
+    featured: true,
   },
 ];
 

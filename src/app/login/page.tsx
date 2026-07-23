@@ -128,15 +128,7 @@ export default function LoginPage() {
 
           {/* Password */}
           <div>
-            <div className="flex justify-between items-center mb-1.5">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password</label>
-              <Link
-                href="/forgot-password"
-                className="text-3xs font-extrabold uppercase tracking-wider text-blue-600 hover:text-blue-800 hover:underline"
-              >
-                Forgot Password?
-              </Link>
-            </div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Password</label>
             <div className="relative">
               <Lock className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
@@ -149,6 +141,14 @@ export default function LoginPage() {
               />
             </div>
             {errors.password && <p className="text-3xs text-red-500 mt-1">{errors.password.message}</p>}
+            <div className="text-right mt-1.5">
+              <Link
+                href="/forgot-password"
+                className="text-3xs font-extrabold uppercase tracking-wider text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
           </div>
 
           <button

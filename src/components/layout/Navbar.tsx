@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, Sparkles, Building, Key, Home, Heart, Scale, PlusCircle, ShieldCheck, LogOut, LogIn, FileText } from "lucide-react";
+import { Menu, X, ChevronDown, Sparkles, Building, Key, Home, Heart, Scale, PlusCircle, ShieldCheck, LogOut, LogIn, FileText, Compass } from "lucide-react";
 import { useFavorites } from "@/context/favoritecontext";
 import { useCompare } from "@/context/comparecontext";
 import { useAuth } from "@/context/authcontext";
@@ -20,6 +20,7 @@ const categories = [
   { name: "Luxury Estates", href: "/luxury", description: "Elite properties & architectural gems", icon: Sparkles, color: "text-amber-500" },
   { name: "Rentals", href: "/rentals", description: "Premium lofts & high-rise apartments", icon: Key, color: "text-purple-600" },
   { name: "Commercial", href: "/commercial", description: "Offices, retail & industrial spaces", icon: Building, color: "text-emerald-600" },
+  { name: "Land", href: "/land", description: "Development plots & acreage sites", icon: Compass, color: "text-orange-600" },
 ];
 
 export default function Navbar() {
