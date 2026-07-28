@@ -7,6 +7,7 @@ import { CompareProvider } from "@/context/comparecontext";
 import CompareBar from "@/components/compare/comparebar";
 import { FavoriteProvider } from "@/context/favoritecontext";
 import { AuthProvider } from "@/context/authcontext";
+import AIAssistant from "@/components/ai/AIAssistant";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -59,6 +60,7 @@ export default function RootLayout({
       <main className="flex-grow">{children}</main>
       <Footer />
       <CompareBar />
+      <AIAssistant />
       </FavoriteProvider>
     </CompareProvider>
   </AuthProvider>
