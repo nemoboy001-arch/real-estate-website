@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Sparkles, X, MessageSquare, Send, Bot, ArrowRight, Home, Building, Key, Compass } from "lucide-react";
+import { Sparkles, X, Send, Bot, ArrowRight, Home, Building, Key, Compass } from "lucide-react";
 import { properties, Property } from "@/data/mockData";
 import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
 
@@ -208,14 +208,17 @@ Try asking something like *"Show me Malibu land plots"* or *"Rentals under $5,00
       {/* FLOATING ACTION CHAT BUBBLE */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-slate-900 text-white shadow-2xl hover:scale-105 transition-all duration-300 ring-4 ring-slate-900/10 focus:outline-hidden hover:bg-slate-800"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 via-indigo-650 to-purple-500 text-white shadow-2xl hover:scale-110 transition-all duration-300 focus:outline-hidden hover:shadow-[0_0_20px_rgba(79,70,229,0.6)] group"
         title="Open AI Assistant"
       >
+        {/* Glow Ring Overlay */}
+        <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-40 blur-md group-hover:opacity-75 transition-opacity duration-300 animate-pulse pointer-events-none" />
+
         {isOpen ? (
-          <X className="h-6 w-6" />
+          <X className="h-6 w-6 relative z-10" />
         ) : (
-          <div className="relative">
-            <MessageSquare className="h-6 w-6" />
+          <div className="relative z-10 flex items-center justify-center">
+            <Sparkles className="h-6 w-6 animate-pulse text-white" />
             <span className="absolute -top-1.5 -right-1.5 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
