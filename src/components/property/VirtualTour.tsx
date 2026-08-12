@@ -149,7 +149,7 @@ export default function VirtualTour({ propertyTitle }: VirtualTourProps) {
 
           <div className="flex bg-slate-50 border border-slate-200 rounded-lg p-0.5">
             <button
-              onClick={() => setZoom((prev) => Math.max(1, prev - 0.25))}
+              onClick={() => setZoom((prev) => Math.max(0.5, prev - 0.25))}
               className="p-1 rounded-md text-slate-500 hover:text-slate-900 hover:bg-white transition-colors"
               title="Zoom Out"
             >
@@ -215,7 +215,7 @@ export default function VirtualTour({ propertyTitle }: VirtualTourProps) {
           style={{
             backgroundImage: `url(${currentRoom.image})`,
             backgroundPosition: `${posX}% center`,
-            backgroundSize: `${zoom * 300}% 100%`,
+            backgroundSize: `auto ${zoom * 100}%`,
             backgroundRepeat: "repeat-x",
           }}
         />
