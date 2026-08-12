@@ -216,7 +216,7 @@ export default function AdminPage() {
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
         
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 border-b border-slate-200 pb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-slate-200 pb-8">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-2xs font-extrabold tracking-widest uppercase text-blue-600 border border-blue-500/20">
               <ShieldCheck className="h-3.5 w-3.5" />
@@ -231,11 +231,44 @@ export default function AdminPage() {
           </div>
 
           {!isSupabaseConfigured() && (
-            <div className="rounded-xl bg-amber-50 border border-amber-200 p-3.5 text-3xs font-semibold text-amber-800 flex gap-2 items-center">
+            <div className="rounded-xl bg-amber-50 border border-amber-200 p-3.5 text-3xs font-semibold text-amber-800 flex gap-2 items-center shadow-2xs">
               <AlertCircle className="h-4 w-4 text-amber-500" />
               Demo Mode active (Simulated DB Queue)
             </div>
           )}
+        </div>
+
+        {/* Quick Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-2xs hover:shadow-xs transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-5 text-blue-600 group-hover:scale-110 transition-transform">
+              <Users className="h-16 w-16" />
+            </div>
+            <p className="text-3xs font-extrabold uppercase tracking-widest text-slate-400">Agent Requests</p>
+            <p className="text-2xl font-black text-slate-900 mt-2 font-serif">{pendingAgents.length}</p>
+            <p className="text-3xs text-slate-500 mt-1 font-semibold">Profiles awaiting verification reviews</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-2xs hover:shadow-xs transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-5 text-indigo-600 group-hover:scale-110 transition-transform">
+              <Building className="h-16 w-16" />
+            </div>
+            <p className="text-3xs font-extrabold uppercase tracking-widest text-slate-400">Listing Approvals</p>
+            <p className="text-2xl font-black text-slate-900 mt-2 font-serif">{pendingListings.length}</p>
+            <p className="text-3xs text-slate-500 mt-1 font-semibold">Properties pending deed moderation</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200/60 bg-white p-5 shadow-2xs hover:shadow-xs transition-all duration-300 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-5 text-emerald-600 group-hover:scale-110 transition-transform">
+              <ShieldCheck className="h-16 w-16" />
+            </div>
+            <p className="text-3xs font-extrabold uppercase tracking-widest text-slate-400">Moderation Guard</p>
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className={`h-2.5 w-2.5 rounded-full animate-pulse ${isSupabaseConfigured() ? "bg-emerald-500" : "bg-amber-500"}`} />
+              <span className="text-sm font-bold text-slate-800 uppercase tracking-wider">
+                {isSupabaseConfigured() ? "Supabase Live DB" : "Sandbox Demo Mode"}
+              </span>
+            </div>
+            <p className="text-3xs text-slate-500 mt-1.5 font-semibold">Automated proof-of-ownership filters active</p>
+          </div>
         </div>
 
         {/* Tab Selector */}
@@ -297,7 +330,7 @@ export default function AdminPage() {
                   pendingAgents.map((agent) => (
                     <div
                       key={agent.id}
-                      className="bg-white rounded-2xl p-6 border border-slate-100 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-6"
+                      className="bg-white rounded-2xl p-6 border border-slate-100 shadow-2xs hover:shadow-md hover:border-slate-200 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:-translate-y-0.5"
                     >
                       <div className="space-y-1">
                         <h3 className="text-sm font-bold text-slate-900">{agent.full_name}</h3>
@@ -367,7 +400,7 @@ export default function AdminPage() {
                   pendingListings.map((listing) => (
                     <div
                       key={listing.id}
-                      className="bg-white rounded-2xl p-6 border border-slate-100 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-6"
+                      className="bg-white rounded-2xl p-6 border border-slate-100 shadow-2xs hover:shadow-md hover:border-slate-200 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:-translate-y-0.5"
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
