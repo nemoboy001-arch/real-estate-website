@@ -24,6 +24,10 @@ import MapMockup from "@/components/property/MapMockup";
 import PropertyCard from "@/components/property/PropertyCard";
 import { useFavorites } from "@/context/favoritecontext";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
+import TourScheduler from "@/components/property/TourScheduler";
+import AgentChat from "@/components/property/AgentChat";
+import NeighborhoodInsights from "@/components/property/NeighborhoodInsights";
+import VirtualTour from "@/components/property/VirtualTour";
 
 interface PropertyDetailProps {
   params: Promise<{ id: string }>;
@@ -275,8 +279,17 @@ export default function PropertyDetailPage({ params }: PropertyDetailProps) {
               </div>
             </div>
 
+            {/* 360 Virtual Tour */}
+            <VirtualTour propertyTitle={property.title} />
+
             {/* Map Mockup */}
             <MapMockup address={property.location.address} city={property.location.city} />
+
+            {/* Neighborhood Guide & Insights */}
+            <NeighborhoodInsights city={property.location.city} />
+
+            {/* Tour Booking Scheduler */}
+            <TourScheduler propertyId={property.id} propertyTitle={property.title} agentName={agent.name} />
 
             {/* Mortgage Calculator for sales, or Lease Information for leases */}
             {!isRental ? (
@@ -310,8 +323,9 @@ export default function PropertyDetailPage({ params }: PropertyDetailProps) {
 
           {/* Right Column: Sticky Contact Form */}
           <div className="space-y-6">
-            <div className="sticky top-24">
+            <div className="sticky top-24 space-y-6">
               <ContactAgentForm agent={agent} propertyName={property.title} />
+              <AgentChat agent={agent} property={property} />
             </div>
           </div>
         </div>

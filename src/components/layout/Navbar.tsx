@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, Sparkles, Building, Key, Home, Heart, Scale, PlusCircle, ShieldCheck, LogOut, LogIn, FileText, Compass } from "lucide-react";
+import { Menu, X, ChevronDown, Sparkles, Building, Key, Home, Heart, Scale, PlusCircle, ShieldCheck, LogOut, LogIn, FileText, Compass, User } from "lucide-react";
 import { useFavorites } from "@/context/favoritecontext";
 import { useCompare } from "@/context/comparecontext";
 import { useAuth } from "@/context/authcontext";
@@ -224,6 +224,14 @@ export default function Navbar() {
               )}
 
               <Link
+                href="/profile"
+                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-2xs font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
+              >
+                <User className="h-3.5 w-3.5 text-blue-600" />
+                Profile
+              </Link>
+
+              <Link
                 href="/listings/my-listings"
                 className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-2xs font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
               >
@@ -369,6 +377,14 @@ export default function Navbar() {
                         <div className="border-t border-slate-500/10 my-3 pt-3 space-y-1">
                           {user ? (
                             <>
+                              <Link
+                                href="/profile"
+                                className="flex items-center gap-2 rounded-lg py-2 px-3 text-base font-semibold text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900"
+                              >
+                                <User className="h-5 w-5 text-blue-600" />
+                                Edit Profile
+                              </Link>
+
                               <Link
                                 href="/listings/my-listings"
                                 className="flex items-center gap-2 rounded-lg py-2 px-3 text-base font-semibold text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900"
