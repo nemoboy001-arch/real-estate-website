@@ -12,8 +12,11 @@ interface RoomTour {
   name: string;
   image: string;
 }
-
 const defaultRooms: RoomTour[] = [
+  { 
+    name: "Building Exterior", 
+    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=2400&q=80" 
+  },
   { 
     name: "Living Room", 
     image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2400&q=80" 
