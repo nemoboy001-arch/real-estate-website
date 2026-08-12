@@ -1,23 +1,46 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { MoveHorizontal, Compass, RefreshCw, ZoomIn, ZoomOut, Play, Pause, AlertCircle } from "lucide-react";
-import { motion } from "framer-motion";
+import { MoveHorizontal, Compass, RefreshCw, ZoomIn, ZoomOut, Play, Pause, AlertCircle, Eye } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface VirtualTourProps {
-  tourImage?: string;
   propertyTitle: string;
 }
 
-export default function VirtualTour({ 
-  tourImage = "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2400&q=80", // Wide high-res luxury living room
-  propertyTitle 
-}: VirtualTourProps) {
+interface RoomTour {
+  name: string;
+  image: string;
+}
+
+const defaultRooms: RoomTour[] = [
+  { 
+    name: "Living Room", 
+    image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2400&q=80" 
+  },
+  { 
+    name: "Chef's Kitchen", 
+    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=2400&q=80" 
+  },
+  { 
+    name: "Master Suite", 
+    image: "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=2400&q=80" 
+  },
+  { 
+    name: "Spa Bathroom", 
+    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=2400&q=80" 
+  }
+];
+
+export default function VirtualTour({ propertyTitle }: VirtualTourProps) {
+  const [activeRoomIdx, setActiveRoomIdx] = useState(0);
   const [posX, setPosX] = useState(50); // percentage 0 to 100
   const [autoRotate, setAutoRotate] = useState(true);
   const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<{ x: number; pos: number } | null>(null);
+
+  const currentRoom = defaultRooms[activeRoomIdx];
 
   // Auto rotate effect
   useEffect(() => {
@@ -33,6 +56,14 @@ export default function VirtualTour({
 
     return () => clearInterval(interval);
   }, [autoRotate]);
+
+  // Reset parameters when switching rooms
+  const handleRoomChange = (idx: number) => {
+    setActiveRoomIdx(idx);
+    setPosX(50);
+    setZoom(1);
+    setAutoRotate(true);
+  };
 
   // Drag handlers
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -50,10 +81,8 @@ export default function VirtualTour({
     const width = containerRef.current.clientWidth;
     const deltaPercent = (deltaX / width) * 100;
     
-    // We adjust position (subtraction makes the drag feel natural like grabbing/pulling the view)
     let newPos = dragStartRef.current.pos - deltaPercent * 0.7;
     
-    // Clamp or wrap around
     if (newPos > 100) newPos = newPos - 100;
     if (newPos < 0) newPos = newPos + 100;
     
@@ -98,7 +127,7 @@ export default function VirtualTour({
             <Compass className="h-4.5 w-4.5 text-amber-500 animate-spin-slow" />
             3D Virtual Space Tour
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">Explore the interior space of {propertyTitle}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Explore the interior layout of {propertyTitle}</p>
         </div>
         
         {/* Controls strip */}
@@ -145,6 +174,26 @@ export default function VirtualTour({
         </div>
       </div>
 
+      {/* Room Selector Pills */}
+      <div className="flex flex-wrap gap-1.5 mb-4 bg-slate-50 p-1.5 rounded-xl border border-slate-100/60">
+        {defaultRooms.map((room, idx) => {
+          const isActive = idx === activeRoomIdx;
+          return (
+            <button
+              key={room.name}
+              onClick={() => handleRoomChange(idx)}
+              className={`flex-grow sm:flex-grow-0 rounded-lg px-4 py-2 text-2xs font-bold uppercase tracking-wider transition-all duration-200 ${
+                isActive
+                  ? "bg-slate-900 text-white shadow-xs"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              {room.name}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Main Panoramic viewport */}
       <div 
         ref={containerRef}
@@ -161,7 +210,7 @@ export default function VirtualTour({
         <div 
           className="absolute inset-0 w-full h-full transition-transform duration-75"
           style={{
-            backgroundImage: `url(${tourImage})`,
+            backgroundImage: `url(${currentRoom.image})`,
             backgroundPosition: `${posX}% center`,
             backgroundSize: `${zoom * 300}% 100%`,
             backgroundRepeat: "repeat-x",
@@ -172,8 +221,8 @@ export default function VirtualTour({
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-slate-950/40 via-transparent to-slate-950/20" />
         
         <div className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-slate-900/70 backdrop-blur-xs px-3 py-1 text-[10px] font-bold text-white border border-white/10 uppercase tracking-widest">
-          <Compass className="h-3.5 w-3.5 text-amber-400" />
-          Panorama View
+          <Eye className="h-3.5 w-3.5 text-amber-400" />
+          {currentRoom.name} Panorama
         </div>
 
         {/* Floating guidance overlay */}
