@@ -78,9 +78,6 @@ export default function AIAssistant() {
     setInputText("");
     setIsTyping(true);
 
-    // Simulate AI thinking and typing latency
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
     // Compile latest listings (Supabase approved listings + mockData properties)
     let allListings = [...properties];
     if (isSupabaseConfigured()) {
@@ -117,27 +114,24 @@ export default function AIAssistant() {
       }
     }
 
-    // AI Parser logic
     const lowerText = text.toLowerCase();
     let replyText = "";
     let matched: Property[] = [];
     let suggestions: string[] = [];
 
-    // Keyword detection
+    // Local property keyword search (if user is looking for properties)
     const isLand = lowerText.includes("land") || lowerText.includes("plot") || lowerText.includes("acre");
     const isLuxury = lowerText.includes("luxury") || lowerText.includes("estate") || lowerText.includes("mansion");
     const isRental = lowerText.includes("rent") || lowerText.includes("lease");
     const isCommercial = lowerText.includes("commercial") || lowerText.includes("office") || lowerText.includes("retail") || lowerText.includes("shop");
     const isResidential = lowerText.includes("residential") || lowerText.includes("home") || lowerText.includes("house") || lowerText.includes("townhouse");
 
-    // Location parsing
     let cityMatch = "";
     if (lowerText.includes("malibu")) cityMatch = "Malibu";
     else if (lowerText.includes("beverly hills")) cityMatch = "Beverly Hills";
     else if (lowerText.includes("los angeles") || lowerText.includes("la")) cityMatch = "Los Angeles";
     else if (lowerText.includes("venice")) cityMatch = "Venice";
 
-    // Max budget parsing (e.g. "under 5000" or "below 1.5M")
     let maxBudget = Infinity;
     const priceRegex = /(?:under|below|less than|max)\s*(?:\$)?\s*([\d,]+)\s*(m|k|million)?/i;
     const priceMatch = lowerText.match(priceRegex);
@@ -149,88 +143,45 @@ export default function AIAssistant() {
       maxBudget = numericVal;
     }
 
-    // Filter properties based on parsed parameters
     if (isLand || isLuxury || isRental || isCommercial || isResidential || cityMatch || maxBudget !== Infinity) {
       matched = allListings.filter((p) => {
-        // Filter by category
         if (isLand && p.category !== "land") return false;
         if (isLuxury && p.category !== "luxury") return false;
         if (isRental && p.category !== "rental") return false;
         if (isCommercial && p.category !== "commercial") return false;
         if (isResidential && p.category !== "residential") return false;
-
-        // Filter by location
         if (cityMatch && p.location.city !== cityMatch) return false;
-
-        // Filter by price
         if (p.price > maxBudget) return false;
-
         return true;
       });
     }
 
-    // Agent verification help
-    const isAgentTopic = lowerText.includes("agent") || lowerText.includes("verify") || lowerText.includes("verification") || lowerText.includes("document");
-    const isTourTopic = lowerText.includes("visit") || lowerText.includes("book") || lowerText.includes("schedule") || lowerText.includes("tour") || lowerText.includes("viewing") || lowerText.includes("appointment");
-    const isMortgageTopic = lowerText.includes("mortgage") || lowerText.includes("payment") || lowerText.includes("loan") || lowerText.includes("down payment") || lowerText.includes("financing");
-    const isDepositTopic = lowerText.includes("deposit") || lowerText.includes("fee") || lowerText.includes("commission") || lowerText.includes("cost");
-    const isBuyRentTopic = lowerText.includes("buy vs rent") || lowerText.includes("rent vs buy") || lowerText.includes("should i buy") || lowerText.includes("should i rent") || lowerText.includes("lease vs buy");
-    const isContactTopic = lowerText.includes("contact") || lowerText.includes("phone") || lowerText.includes("email") || lowerText.includes("call") || lowerText.includes("address");
-    const isCompareTopic = lowerText.includes("compare") || lowerText.includes("favorite");
+    // Call conversational backend API
+    try {
+      const apiResponse = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
+      });
 
-    if (isAgentTopic) {
-      replyText = `To verify your agent account, please go to **My Listings** from your top navigation bar. If you are unverified, you will see a box to attach your National Identification Number (NIN). 
-
-For submitting properties, you must also provide proof of ownership (e.g. Certificate of Occupancy or signed mandate).`;
-      suggestions = ["Show my listings", "How to list a property?"];
-    } else if (isTourTopic) {
-      replyText = `To book a property viewing or schedule a private tour:
-1. Click on any property card from our listings.
-2. Scroll to the "Contact Agent" form.
-3. Fill out your details and suggest a date/time. The listing agent will contact you to confirm!`;
-      suggestions = ["Browse All Listings", "Contact Us"];
-    } else if (isMortgageTopic) {
-      replyText = `We work closely with premier lenders to assist with home financing. Standard down payments range from 10% to 20%. 
-
-Feel free to reach out to our team at info@vertexrealestate.com for personalized mortgage broker recommendations.`;
-      suggestions = ["Show luxury estates", "Contact our team"];
-    } else if (isDepositTopic) {
-      replyText = `Here is our guide on transaction costs:
-* **Rentals**: Security deposits are typically equivalent to 1-2 months' rent.
-* **Purchases**: Earnest money deposit (usually 1-3% of purchase price) is paid into escrow upon signing.
-* **Agent fees**: Broker commissions are generally paid by the seller/landlord.`;
-      suggestions = ["Show me rentals", "Show luxury estates"];
-    } else if (isBuyRentTopic) {
-      replyText = `Deciding between buying and renting depends on your goals:
-* **Buying** is great for building equity, long-term stability, and tax advantages.
-* **Renting** offers flexibility, zero maintenance costs, and lower upfront capital requirements.
-
-We represent prime listings in both categories!`;
-      suggestions = ["Show me rentals", "Show homes for sale"];
-    } else if (isContactTopic) {
-      replyText = `You can reach Vertex Realty through the following channels:
-* 📞 Phone: (555) 124-5678
-* ✉️ Email: contact@vertexrealestate.com
-* 📍 HQ: 777 Wilshire Blvd, Los Angeles, CA
-Or fill out our form on the **Contact** page.`;
-      suggestions = ["Visit Contact Page", "Our Team Directory"];
-    } else if (isCompareTopic) {
-      replyText = `Our platform lets you compare properties:
-1. Click the **Heart icon** on any property to save it to your Favorites.
-2. Click the **Compare icon** on any listing card to add it to your comparison tray.
-3. Compare up to 3 listings side-by-side!`;
-      suggestions = ["Browse listings", "Show luxury estates"];
-    } else if (matched.length > 0) {
-      replyText = `I found ${matched.length} property listing${matched.length > 1 ? "s" : ""} matching your criteria:`;
-      suggestions = ["Show me rentals", "Find commercial offices"];
-    } else if (lowerText.includes("hello") || lowerText.includes("hi") || lowerText.includes("hey")) {
-      replyText = `Hi there! I am your Vertex AI Assistant. I can help search for rentals, land plots, offices, residential properties, or guide you with booking viewings and agent tasks. What can I help you find?`;
-      suggestions = ["Show me land sites", "Find rentals in LA"];
-    } else {
-      replyText = `I couldn't find any active properties matching those specific search terms. 
-
-Try asking something like *"Show me Malibu land plots"*, *"Rentals under $4,000"*, or *"How do I book a tour?"* to explore our services.`;
-      suggestions = ["Show me rentals under $4,000", "Find land sites"];
+      if (!apiResponse.ok) throw new Error("API failed");
+      const apiData = await apiResponse.json();
+      replyText = apiData.text;
+      suggestions = apiData.suggestions || [];
+    } catch (err) {
+      // Local fallback in case of API failure (uses original parser)
+      console.warn("Conversational API failed, using basic local parser fallback:", err);
+      const isAgentTopic = lowerText.includes("agent") || lowerText.includes("verify") || lowerText.includes("verification") || lowerText.includes("document");
+      if (isAgentTopic) {
+        replyText = `To verify your agent account, please go to **Profile** from your top navigation bar. If you are unverified, you will see a box to attach your National Identification Number (NIN).`;
+        suggestions = ["Show my listings", "How to list a property?"];
+      } else if (matched.length > 0) {
+        replyText = `I found ${matched.length} property listing${matched.length > 1 ? "s" : ""} matching your search terms:`;
+        suggestions = ["Show me rentals", "Show luxury estates"];
+      } else {
+        replyText = `I am sorry, I couldn't process that query. Try asking something like *"Show me Malibu land plots"*, *"Rentals under $4,000"*, or *"How do I book a tour?"*.`;
+        suggestions = ["Show me rentals under $4,000", "Find land sites"];
+      }
     }
 
     const botMsg: Message = {
@@ -238,7 +189,7 @@ Try asking something like *"Show me Malibu land plots"*, *"Rentals under $4,000"
       sender: "bot",
       text: replyText,
       timestamp: getCurrentTimestamp(),
-      matchedListings: matched.slice(0, 3), // Limit showing max 3 card links inside panel
+      matchedListings: matched.slice(0, 3),
       suggestions: suggestions.length > 0 ? suggestions : undefined,
     };
 
