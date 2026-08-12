@@ -170,16 +170,60 @@ export default function AIAssistant() {
       suggestions = apiData.suggestions || [];
     } catch (err) {
       // Local fallback in case of API failure (uses original parser)
-      console.warn("Conversational API failed, using basic local parser fallback:", err);
-      const isAgentTopic = lowerText.includes("agent") || lowerText.includes("verify") || lowerText.includes("verification") || lowerText.includes("document");
-      if (isAgentTopic) {
-        replyText = `To verify your agent account, please go to **Profile** from your top navigation bar. If you are unverified, you will see a box to attach your National Identification Number (NIN).`;
-        suggestions = ["Show my listings", "How to list a property?"];
-      } else if (matched.length > 0) {
-        replyText = `I found ${matched.length} property listing${matched.length > 1 ? "s" : ""} matching your search terms:`;
+      console.warn("Conversational API failed, using local fallback KB parser:", err);
+      
+      const match = (keywords: string[]) => keywords.some((kw) => lowerText.includes(kw));
+
+      if (match(["hello", "hi", "hey", "yo", "greetings"])) {
+        replyText = `Hi there! I am the Vertex AI Assistant. I can help search for properties, schedule tours, or guide you with agent and listing submissions. What can I find for you?`;
+        suggestions = ["Show me rentals under $4,000", "Find land sites"];
+      } 
+      else if (match(["who are you", "what is this site", "vertex", "company"])) {
+        replyText = `Vertex Realty is a premium real estate platform specializing in Residential, Luxury, Rentals, Commercial, and Land properties. We offer features like interactive 3D virtual tours, neighborhood guides, and direct agent chats.`;
+        suggestions = ["Explore Luxury Estates", "Contact Us"];
+      }
+      else if (match(["contact", "phone", "email", "number", "call", "office", "address", "hq"])) {
+        replyText = `You can reach Vertex Realty via:\n* 📞 Phone: (555) 124-5678\n* ✉️ Email: info@vertexrealestate.com\n* 📍 Headquarters: 777 Wilshire Blvd, Los Angeles, CA.`;
+        suggestions = ["Visit Contact Page"];
+      }
+      else if (match(["list", "submit", "upload", "sell", "add property", "new listing"])) {
+        replyText = `To list a property, log in to your Agent Portal and click **Submit Listing** in the top navigation bar. Fill out the details and upload a PDF/image **Proof of Ownership** (deed or tax receipt). Once checked by an admin, it will go live!`;
+        suggestions = ["Submit a Listing", "How does verification work?"];
+      }
+      else if (match(["verify", "verification", "gold badge", "gold shield", "nin", "identity"])) {
+        replyText = `To verify your account, head to your **Profile Dashboard** (click Profile in the navbar) and upload your National Identification Card/NIN document. Upon approval, you will receive a golden Verified Specialist badge on your profile and listings.`;
+        suggestions = ["Go to Profile Dashboard"];
+      }
+      else if (match(["rejected", "moderation", "memo", "pending", "status", "why is my listing"])) {
+        replyText = `Check your **My Listings** queue in your dashboard. Denied listings display a **Moderation Memo** detailing why (e.g. illegible deed). Correct the details and submit again to request approval.`;
+        suggestions = ["Check My Listings"];
+      }
+      else if (match(["book a tour", "schedule", "visit", "viewing", "appointment", "calendar"])) {
+        replyText = `To book a tour, visit any listing detail page and scroll down to the **Schedule a Private Tour** panel. Select a date/time and tour format (In-Person or Video Chat). The agent will contact you to confirm!`;
+        suggestions = ["Browse All Listings"];
+      }
+      else if (match(["chat with agent", "direct message", "talk to agent", "contact agent"])) {
+        replyText = `To message an agent, open any listing page and locate the agent card in the right sidebar. Click **Chat Directly With Agent** to launch a real-time messaging thread.`;
+        suggestions = ["Browse Listings"];
+      }
+      else if (match(["compare", "favorites", "saved", "heart"])) {
+        replyText = `Save listings to favorites by clicking the **Heart icon**. Compare up to 3 properties side-by-side by clicking **Compare Property** on cards and opening the Compare Tray.`;
+        suggestions = ["Browse Listings"];
+      }
+      else if (match(["mortgage", "loan", "down payment", "calculator", "finance"])) {
+        replyText = `We provide an interactive **Mortgage Calculator** on all sale property pages to compute principal, interest, taxes, and monthly payment estimates dynamically.`;
+        suggestions = ["Show luxury estates"];
+      }
+      else if (match(["walk score", "transit", "bike", "neighborhood", "schools"])) {
+        replyText = `Listing pages feature a **Neighborhood Analytics** panel showing Walk, Transit, and Bike Scores, alongside local restaurants, schools, and transit links with distances.`;
+        suggestions = ["Browse Listings"];
+      }
+      else if (matched.length > 0) {
+        replyText = `I found ${matched.length} property listing${matched.length > 1 ? "s" : ""} matching your criteria:`;
         suggestions = ["Show me rentals", "Show luxury estates"];
-      } else {
-        replyText = `I am sorry, I couldn't process that query. Try asking something like *"Show me Malibu land plots"*, *"Rentals under $4,000"*, or *"How do I book a tour?"*.`;
+      }
+      else {
+        replyText = `I couldn't find any active listings matching your query. Try asking something like *"Show me Malibu land plots"*, *"Rentals under $4,000"*, or *"How do I book a tour?"*.`;
         suggestions = ["Show me rentals under $4,000", "Find land sites"];
       }
     }
