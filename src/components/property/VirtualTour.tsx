@@ -6,36 +6,45 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface VirtualTourProps {
   propertyTitle: string;
+  category?: string;
 }
 
 interface RoomTour {
   name: string;
   image: string;
 }
-const defaultRooms: RoomTour[] = [
-  { 
-    name: "Building Exterior", 
-    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=2400&q=80" 
-  },
-  { 
-    name: "Living Room", 
-    image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2400&q=80" 
-  },
-  { 
-    name: "Chef's Kitchen", 
-    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=2400&q=80" 
-  },
-  { 
-    name: "Master Suite", 
-    image: "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=2400&q=80" 
-  },
-  { 
-    name: "Spa Bathroom", 
-    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=2400&q=80" 
-  }
-];
 
-export default function VirtualTour({ propertyTitle }: VirtualTourProps) {
+const getRoomsForCategory = (cat?: string): RoomTour[] => {
+  const cleanCat = cat?.toLowerCase() || "residential";
+  
+  if (cleanCat === "land") {
+    return [
+      { name: "Plot Boundary", image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=2400&q=80" },
+      { name: "Mountain View", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2400&q=80" },
+      { name: "Zoning Vista", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=80" }
+    ];
+  }
+  
+  if (cleanCat === "commercial") {
+    return [
+      { name: "Corporate Lobby", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=2400&q=80" },
+      { name: "Boardroom", image: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=2400&q=80" },
+      { name: "Desk Workspace", image: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=2400&q=80" }
+    ];
+  }
+  
+  // Default Residential / Luxury / Rental
+  return [
+    { name: "Building Exterior", image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=2400&q=80" },
+    { name: "Living Room", image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=2400&q=80" },
+    { name: "Chef's Kitchen", image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=2400&q=80" },
+    { name: "Master Suite", image: "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=2400&q=80" },
+    { name: "Spa Bathroom", image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=2400&q=80" }
+  ];
+};
+
+export default function VirtualTour({ propertyTitle, category }: VirtualTourProps) {
+  const rooms = getRoomsForCategory(category);
   const [activeRoomIdx, setActiveRoomIdx] = useState(0);
   const [posX, setPosX] = useState(50); // percentage 0 to 100
   const [autoRotate, setAutoRotate] = useState(true);
@@ -43,7 +52,15 @@ export default function VirtualTour({ propertyTitle }: VirtualTourProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<{ x: number; pos: number } | null>(null);
 
-  const currentRoom = defaultRooms[activeRoomIdx];
+  const currentRoom = rooms[activeRoomIdx] || rooms[0];
+
+  // Reset indices when category changes
+  useEffect(() => {
+    setActiveRoomIdx(0);
+    setPosX(50);
+    setZoom(1);
+    setAutoRotate(true);
+  }, [category]);
 
   // Auto rotate effect
   useEffect(() => {
@@ -179,7 +196,7 @@ export default function VirtualTour({ propertyTitle }: VirtualTourProps) {
 
       {/* Room Selector Pills */}
       <div className="flex flex-wrap gap-1.5 mb-4 bg-slate-50 p-1.5 rounded-xl border border-slate-100/60">
-        {defaultRooms.map((room, idx) => {
+        {rooms.map((room, idx) => {
           const isActive = idx === activeRoomIdx;
           return (
             <button

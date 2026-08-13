@@ -319,7 +319,7 @@ export default function PropertyDetailPage({ params }: PropertyDetailProps) {
             </div>
 
             {/* 360 Virtual Tour */}
-            <VirtualTour propertyTitle={property.title} />
+            <VirtualTour propertyTitle={property.title} category={property.category} />
 
             {/* Map Mockup */}
             <MapMockup address={property.location.address} city={property.location.city} />
