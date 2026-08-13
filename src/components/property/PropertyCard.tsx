@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Heart ,MapPin, Bed, Bath, Square, Sparkles } from "lucide-react";
+import { Heart ,MapPin, Bed, Bath, Square, Sparkles, Award } from "lucide-react";
 import { Property } from "@/data/mockData";
 import { useCompare } from "@/context/comparecontext";
 import { useFavorites } from "@/context/favoritecontext";
@@ -93,6 +93,13 @@ const compared = isComparing(property.id);
             {isLuxury && <Sparkles className="h-3 w-3 text-amber-400" />}
             {category.toUpperCase()}
           </span>
+
+          {(property as any).is_inspected && (
+            <span className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white border border-amber-400 px-3 py-1 text-2xs font-extrabold uppercase tracking-wider shadow-sm flex items-center gap-1">
+              <Award className="h-3.5 w-3.5 text-white" />
+              Inspected
+            </span>
+          )}
         </div>
       </div>
 

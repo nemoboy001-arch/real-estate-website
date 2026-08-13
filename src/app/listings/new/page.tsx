@@ -22,6 +22,7 @@ const listingSchema = z.object({
   city: z.string().min(2, "City must be at least 2 characters"),
   zip: z.string().min(5, "ZIP code must be at least 5 characters"),
   images: z.string().min(1, "Please supply at least one image URL. Separate multiple URLs with commas or line breaks."),
+  parcelNumber: z.string().min(5, "Property parcel / registry code must be at least 5 characters"),
 });
 
 type ListingFormData = z.infer<typeof listingSchema>;
@@ -39,8 +40,12 @@ export default function NewListingPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [documentError, setDocumentError] = useState<string | null>(null);
+
+  const [utilityFile, setUtilityFile] = useState<File | null>(null);
+  const [utilityError, setUtilityError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -52,6 +57,19 @@ export default function NewListingPage() {
       }
       setDocumentError(null);
       setDocumentFile(file);
+    }
+  };
+
+  const handleUtilityFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        setUtilityError("File size exceeds 10MB limit.");
+        setUtilityFile(null);
+        return;
+      }
+      setUtilityError(null);
+      setUtilityFile(file);
     }
   };
 
@@ -80,9 +98,15 @@ export default function NewListingPage() {
   const onSubmit = async (data: ListingFormData) => {
     setError(null);
     setDocumentError(null);
+    setUtilityError(null);
 
     if (!documentFile) {
       setDocumentError("Proof-of-ownership document is required (Title Deed, Certificate of Occupancy, or Mandate).");
+      return;
+    }
+
+    if (!utilityFile) {
+      setUtilityError("Utility bill or agency mandate upload is required.");
       return;
     }
 
@@ -98,13 +122,16 @@ export default function NewListingPage() {
     const bathsCount = data.baths ? Number(data.baths) : undefined;
 
     let proofDocumentUrl = "";
+    let utilityDocumentUrl = "";
 
     if (!isSupabaseConfigured()) {
       // Mock submit
       await new Promise((resolve) => setTimeout(resolve, 1500));
       proofDocumentUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+      utilityDocumentUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
     } else {
       try {
+        // Upload deed
         const fileExt = documentFile.name.split(".").pop();
         const fileName = generateFileName(user?.id, fileExt);
         const filePath = `documents/${fileName}`;
@@ -120,8 +147,25 @@ export default function NewListingPage() {
           .getPublicUrl(filePath);
 
         proofDocumentUrl = publicUrlData.publicUrl;
+
+        // Upload utility document
+        const utilExt = utilityFile.name.split(".").pop();
+        const utilName = generateFileName(user?.id, utilExt);
+        const utilPath = `utility/${utilName}`;
+
+        const { error: utilUploadError } = await supabase.storage
+          .from("listing-documents")
+          .upload(utilPath, utilityFile);
+
+        if (utilUploadError) throw utilUploadError;
+
+        const { data: utilUrlData } = supabase.storage
+          .from("listing-documents")
+          .getPublicUrl(utilPath);
+
+        utilityDocumentUrl = utilUrlData.publicUrl;
       } catch (err: unknown) {
-        setError("Failed to upload proof of ownership document: " + ((err as Error).message || "Storage error."));
+        setError("Failed to upload proof documents: " + ((err as Error).message || "Storage error."));
         setLoading(false);
         return;
       }
@@ -143,12 +187,28 @@ export default function NewListingPage() {
       posted_by: user?.id,
       status: "pending",
       proof_document_url: proofDocumentUrl,
+      parcel_number: data.parcelNumber,
+      utility_document_url: utilityDocumentUrl,
+      is_inspected: false,
     };
 
     try {
       if (isSupabaseConfigured()) {
         const { error: insertError } = await supabase.from("listings").insert(payload);
         if (insertError) throw insertError;
+      } else {
+        // Store locally for sandbox demo persistent state
+        const localListingsKey = "vertex_sandbox_listings";
+        const existing = localStorage.getItem(localListingsKey);
+        const list = existing ? JSON.parse(existing) : [];
+        const newListing = {
+          id: `sandbox-${Date.now()}`,
+          ...payload,
+          posted_by_name: profile?.full_name || "Demo Agent",
+          created_at: new Date().toISOString(),
+        };
+        list.push(newListing);
+        localStorage.setItem(localListingsKey, JSON.stringify(list));
       }
       setSuccess(true);
     } catch (err: unknown) {
@@ -400,6 +460,18 @@ export default function NewListingPage() {
                   />
                   {errors.zip && <p className="text-3xs text-red-500 mt-1">{errors.zip.message}</p>}
                 </div>
+                <div className="sm:col-span-3">
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">Property Registry Code / Parcel Tax ID</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. PARCEL-90210-44A"
+                    {...register("parcelNumber")}
+                    className={`w-full rounded-xl border py-2.5 px-4 text-xs outline-hidden focus:ring-1 focus:ring-blue-600/20 ${
+                      errors.parcelNumber ? "border-red-500 focus:border-red-500" : "border-slate-200 focus:border-blue-600"
+                    }`}
+                  />
+                  {errors.parcelNumber && <p className="text-3xs text-red-500 mt-1">{errors.parcelNumber.message}</p>}
+                </div>
               </div>
             </div>
 
@@ -428,42 +500,78 @@ export default function NewListingPage() {
             </div>
 
             {/* 4. Proof of Ownership Document Upload */}
-            <div className="space-y-4 pt-6 border-t border-slate-100">
+            <div className="space-y-6 pt-6 border-t border-slate-100">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center gap-2">
                 <FileText className="h-4.5 w-4.5 text-blue-600" />
-                Proof of Ownership Verification (Required)
+                Ownership & Authority Documents (Required)
               </h3>
               
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">
-                  Upload Title Deed, Certificate of Occupancy, or Sales/Letting Mandate
-                </label>
-                <div className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors ${documentError ? "border-red-400 bg-red-50/50" : documentFile ? "border-emerald-400 bg-emerald-50/30" : "border-slate-200 hover:border-blue-400 bg-slate-50/50"}`}>
-                  <input
-                    type="file"
-                    id="proof-document-upload"
-                    accept=".pdf,.png,.jpg,.jpeg,.docx"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                  <label htmlFor="proof-document-upload" className="cursor-pointer flex flex-col items-center gap-2">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${documentFile ? "bg-emerald-100 text-emerald-600" : "bg-blue-50 text-blue-600"}`}>
-                      {documentFile ? <CheckCircle className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
-                    </div>
-                    {documentFile ? (
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">{documentFile.name}</p>
-                        <p className="text-3xs text-emerald-600 font-semibold mt-0.5">Document attached ({(documentFile.size / 1024 / 1024).toFixed(2)} MB)</p>
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="text-xs font-bold text-slate-800">Click to select document file</p>
-                        <p className="text-3xs text-slate-400 mt-0.5">Supported formats: PDF, PNG, JPG, DOCX (Max 10MB)</p>
-                      </div>
-                    )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Proof of Ownership */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-700 uppercase">
+                    Title Deed / Sales Mandate
                   </label>
+                  <div className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors ${documentError ? "border-red-400 bg-red-50/50" : documentFile ? "border-emerald-400 bg-emerald-50/30" : "border-slate-200 hover:border-blue-400 bg-slate-50/50"}`}>
+                    <input
+                      type="file"
+                      id="proof-document-upload"
+                      accept=".pdf,.png,.jpg,.jpeg,.docx"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <label htmlFor="proof-document-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                      <div className={`h-10 w-10 rounded-full flex items-center justify-center ${documentFile ? "bg-emerald-100 text-emerald-600" : "bg-blue-50 text-blue-600"}`}>
+                        {documentFile ? <CheckCircle className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+                      </div>
+                      {documentFile ? (
+                        <div>
+                          <p className="text-xs font-bold text-slate-900 truncate max-w-[200px]">{documentFile.name}</p>
+                          <p className="text-3xs text-emerald-600 font-semibold mt-0.5">Deed attached ({(documentFile.size / 1024 / 1024).toFixed(2)} MB)</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-xs font-bold text-slate-800">Select Title Deed</p>
+                          <p className="text-3xs text-slate-400 mt-0.5">PDF, PNG, JPG (Max 10MB)</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                  {documentError && <p className="text-3xs text-red-500 font-semibold mt-1">{documentError}</p>}
                 </div>
-                {documentError && <p className="text-3xs text-red-500 font-semibold mt-1">{documentError}</p>}
+
+                {/* Utility Bill / Authority Mandate */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-slate-700 uppercase">
+                    Utility Statement / Mandate
+                  </label>
+                  <div className={`border-2 border-dashed rounded-2xl p-6 text-center transition-colors ${utilityError ? "border-red-400 bg-red-50/50" : utilityFile ? "border-emerald-400 bg-emerald-50/30" : "border-slate-200 hover:border-blue-400 bg-slate-50/50"}`}>
+                    <input
+                      type="file"
+                      id="utility-document-upload"
+                      accept=".pdf,.png,.jpg,.jpeg,.docx"
+                      onChange={handleUtilityFileChange}
+                      className="hidden"
+                    />
+                    <label htmlFor="utility-document-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                      <div className={`h-10 w-10 rounded-full flex items-center justify-center ${utilityFile ? "bg-emerald-100 text-emerald-600" : "bg-blue-50 text-blue-600"}`}>
+                        {utilityFile ? <CheckCircle className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+                      </div>
+                      {utilityFile ? (
+                        <div>
+                          <p className="text-xs font-bold text-slate-900 truncate max-w-[200px]">{utilityFile.name}</p>
+                          <p className="text-3xs text-emerald-600 font-semibold mt-0.5">Utility attached ({(utilityFile.size / 1024 / 1024).toFixed(2)} MB)</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-xs font-bold text-slate-800">Select Utility Statement</p>
+                          <p className="text-3xs text-slate-400 mt-0.5">PDF, PNG, JPG (Max 10MB)</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                  {utilityError && <p className="text-3xs text-red-500 font-semibold mt-1">{utilityError}</p>}
+                </div>
               </div>
             </div>
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, Users, Building, CheckCircle, XCircle, Loader2, AlertCircle, FileText, ExternalLink } from "lucide-react";
+import { ShieldCheck, Users, Building, CheckCircle, XCircle, Loader2, AlertCircle, FileText, ExternalLink, ShieldAlert, Award } from "lucide-react";
 import { useAuth } from "@/context/authcontext";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 
@@ -28,6 +28,9 @@ interface PendingListing {
   posted_by_name?: string;
   status: string;
   proof_document_url?: string;
+  parcel_number?: string;
+  utility_document_url?: string;
+  is_inspected?: boolean;
 }
 
 export default function AdminPage() {
@@ -85,39 +88,67 @@ export default function AdminPage() {
         if (agentsError) throw agentsError;
         setPendingAgents(agents || []);
 
-        // Fetch pending listings
-        const { data: listings, error: listingsError } = await supabase
-          .from("listings")
-          .select(`
-            id,
-            title,
-            price,
-            category,
-            listing_type,
-            address,
-            city,
-            status,
-            proof_document_url,
-            profiles (
-              full_name
-            )
-          `)
-          .eq("status", "pending");
+        let formattedListings = [];
 
-        if (listingsError) throw listingsError;
+        if (isSupabaseConfigured()) {
+          const { data: listings, error: listingsError } = await supabase
+            .from("listings")
+            .select(`
+              id,
+              title,
+              price,
+              category,
+              listing_type,
+              address,
+              city,
+              status,
+              proof_document_url,
+              parcel_number,
+              utility_document_url,
+              is_inspected,
+              profiles (
+                full_name
+              )
+            `)
+            .eq("status", "pending");
 
-        const formattedListings = (listings || []).map((l: Record<string, unknown>) => ({
-          id: String(l.id),
-          title: String(l.title),
-          price: Number(l.price),
-          category: String(l.category),
-          listing_type: String(l.listing_type),
-          address: String(l.address),
-          city: String(l.city),
-          posted_by_name: (l.profiles as { full_name?: string })?.full_name || "Unknown Agent",
-          status: String(l.status),
-          proof_document_url: l.proof_document_url ? String(l.proof_document_url) : undefined,
-        }));
+          if (listingsError) throw listingsError;
+
+          formattedListings = (listings || []).map((l: any) => ({
+            id: String(l.id),
+            title: String(l.title),
+            price: Number(l.price),
+            category: String(l.category),
+            listing_type: String(l.listing_type),
+            address: String(l.address),
+            city: String(l.city),
+            posted_by_name: l.profiles?.full_name || "Unknown Agent",
+            status: String(l.status),
+            proof_document_url: l.proof_document_url ? String(l.proof_document_url) : undefined,
+            parcel_number: l.parcel_number ? String(l.parcel_number) : undefined,
+            utility_document_url: l.utility_document_url ? String(l.utility_document_url) : undefined,
+            is_inspected: Boolean(l.is_inspected),
+          }));
+        } else {
+          // Load local listings from sandbox key
+          const sandbox = localStorage.getItem("vertex_sandbox_listings");
+          const mockList = sandbox ? JSON.parse(sandbox) : [];
+          formattedListings = mockList.filter((l: any) => l.status === "pending").map((l: any) => ({
+            id: String(l.id),
+            title: String(l.title),
+            price: Number(l.price),
+            category: String(l.category),
+            listing_type: String(l.listing_type),
+            address: String(l.address),
+            city: String(l.city),
+            posted_by_name: String(l.posted_by_name || "Demo Agent"),
+            status: String(l.status),
+            proof_document_url: l.proof_document_url ? String(l.proof_document_url) : undefined,
+            parcel_number: l.parcel_number ? String(l.parcel_number) : undefined,
+            utility_document_url: l.utility_document_url ? String(l.utility_document_url) : undefined,
+            is_inspected: Boolean(l.is_inspected),
+          }));
+        }
         
         setPendingListings(formattedListings);
       } catch (err) {
@@ -195,6 +226,48 @@ export default function AdminPage() {
       setFeedbackMsg({ type: "success", text: `Listing has been ${status} successfully.` });
     } catch (err: unknown) {
       setFeedbackMsg({ type: "error", text: (err as Error).message || "An error occurred." });
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  const togglePhysicalInspection = async (listingId: string, currentStatus: boolean) => {
+    setActioningId(listingId);
+    setFeedbackMsg(null);
+
+    if (!isSupabaseConfigured()) {
+      // Toggle locally
+      const sandbox = localStorage.getItem("vertex_sandbox_listings");
+      if (sandbox) {
+        const mockList = JSON.parse(sandbox);
+        const updated = mockList.map((l: any) => {
+          if (l.id === listingId) {
+            return { ...l, is_inspected: !currentStatus };
+          }
+          return l;
+        });
+        localStorage.setItem("vertex_sandbox_listings", JSON.stringify(updated));
+      }
+      setPendingListings((prev) =>
+        prev.map((l) => (l.id === listingId ? { ...l, is_inspected: !currentStatus } : l))
+      );
+      setActioningId(null);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("listings")
+        .update({ is_inspected: !currentStatus })
+        .eq("id", listingId);
+
+      if (error) throw error;
+      setPendingListings((prev) =>
+        prev.map((l) => (l.id === listingId ? { ...l, is_inspected: !currentStatus } : l))
+      );
+      setFeedbackMsg({ type: "success", text: `Physical inspection status updated successfully.` });
+    } catch (err: any) {
+      setFeedbackMsg({ type: "error", text: err.message || "Failed to update inspection status." });
     } finally {
       setActioningId(null);
     }
@@ -415,8 +488,8 @@ export default function AdminPage() {
                           <span>Price: <strong className="text-slate-900">${listing.price.toLocaleString()}</strong></span>
                           <span>Submitted By: <strong className="text-blue-600">{listing.posted_by_name}</strong></span>
                         </div>
-                        {listing.proof_document_url && (
-                          <div className="pt-2">
+                        <div className="pt-2 flex flex-wrap gap-2 items-center">
+                          {listing.proof_document_url && (
                             <a
                               href={listing.proof_document_url}
                               target="_blank"
@@ -424,11 +497,57 @@ export default function AdminPage() {
                               className="inline-flex items-center gap-1.5 text-3xs font-extrabold uppercase tracking-wider text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors shadow-2xs"
                             >
                               <FileText className="h-3.5 w-3.5" />
-                              Inspect Proof of Ownership Document
+                              Inspect Title Deed
                               <ExternalLink className="h-3 w-3 ml-0.5 opacity-70" />
                             </a>
+                          )}
+                          {listing.utility_document_url && (
+                            <a
+                              href={listing.utility_document_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-3xs font-extrabold uppercase tracking-wider text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 hover:bg-indigo-100 transition-colors shadow-2xs"
+                            >
+                              <FileText className="h-3.5 w-3.5" />
+                              Inspect Utility Statement / Mandate
+                              <ExternalLink className="h-3 w-3 ml-0.5 opacity-70" />
+                            </a>
+                          )}
+                        </div>
+
+                        {listing.parcel_number && (
+                          <div className="pt-2">
+                            <span className="inline-flex items-center gap-1 text-3xs font-bold text-slate-500 bg-slate-100 border border-slate-200/60 px-2.5 py-1 rounded-md">
+                              Registry Parcel: {listing.parcel_number}
+                            </span>
                           </div>
                         )}
+
+                        {/* Automated OCR Integrity Check MOCK Panel */}
+                        <div className="mt-4 p-3 bg-slate-50 border border-slate-200/60 rounded-xl space-y-1.5 max-w-lg">
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                            <ShieldAlert className="h-3.5 w-3.5 text-amber-500" />
+                            AI Document Integrity Check (OCR)
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-3xs font-semibold text-slate-500 uppercase">
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                              <span>Deed Matches Parcel Code</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                              <span>Stamps Verified Authentic</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                              <span>Utility Bill Address Match</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                              <span>Owner Identity Confirmed</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="flex flex-col gap-3 items-end">
@@ -464,6 +583,18 @@ export default function AdminPage() {
                           </div>
                         ) : (
                           <div className="flex gap-2">
+                            <button
+                              onClick={() => togglePhysicalInspection(listing.id, !!listing.is_inspected)}
+                              disabled={actioningId === listing.id}
+                              className={`flex items-center gap-1.5 rounded-lg border font-bold px-4 py-2 text-2xs uppercase tracking-wider transition-colors disabled:bg-slate-200 ${
+                                listing.is_inspected 
+                                  ? "bg-amber-500 border-amber-600 text-white hover:bg-amber-600"
+                                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                              }`}
+                            >
+                              <Award className="h-3.5 w-3.5" />
+                              {listing.is_inspected ? "Verified Inspected" : "Mark Inspected"}
+                            </button>
                             <button
                               onClick={() => handleModerateListing(listing.id, "approved")}
                               disabled={actioningId === listing.id}

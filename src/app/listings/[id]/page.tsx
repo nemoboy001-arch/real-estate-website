@@ -16,6 +16,7 @@ import {
   Heart,
   ChevronLeft,
   ChevronRight,
+  Award,
 } from "lucide-react";
 import { properties, agents, Property } from "@/data/mockData";
 import MortgageCalculator from "@/components/property/MortgageCalculator";
@@ -38,7 +39,38 @@ export default function PropertyDetailPage({ params }: PropertyDetailProps) {
   const [dbProperty, setDbProperty] = useState<Property | null>(null);
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) return;
+    if (!isSupabaseConfigured()) {
+      // Look for sandbox listing locally
+      const sandbox = localStorage.getItem("vertex_sandbox_listings");
+      if (sandbox) {
+        const mockList = JSON.parse(sandbox);
+        const found = mockList.find((l: any) => String(l.id) === String(id));
+        if (found) {
+          setDbProperty({
+            id: String(found.id),
+            title: found.title,
+            category: found.category,
+            listingType: found.listing_type || found.listingType,
+            price: Number(found.price),
+            beds: found.beds ? Number(found.beds) : undefined,
+            baths: found.baths ? Number(found.baths) : undefined,
+            sqft: Number(found.sqft),
+            location: found.location || {
+              address: found.address,
+              city: found.city,
+              zip: found.zip,
+            },
+            images: found.images && found.images.length > 0 ? found.images : ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80"],
+            amenities: ["Approved Asset", "Verified Listing"],
+            agentId: found.posted_by || "demo-agent",
+            description: found.description,
+            featured: true,
+            is_inspected: Boolean(found.is_inspected),
+          } as any);
+        }
+      }
+      return;
+    }
 
     const fetchProperty = async () => {
       try {
@@ -69,7 +101,8 @@ export default function PropertyDetailPage({ params }: PropertyDetailProps) {
           agentId: data.posted_by,
           description: data.description,
           featured: true,
-        });
+          is_inspected: Boolean(data.is_inspected),
+        } as any);
       } catch (err) {
         console.error("Error fetching single listing from Supabase:", err);
       }
@@ -153,6 +186,12 @@ export default function PropertyDetailPage({ params }: PropertyDetailProps) {
               <span className="rounded-full bg-slate-900 text-white px-3 py-1 text-2xs font-bold uppercase tracking-wider">
                 {property.category}
               </span>
+              {(property as any).is_inspected && (
+                <span className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white border border-amber-400 px-3 py-1 text-2xs font-black uppercase tracking-wider shadow-xs flex items-center gap-1">
+                  <Award className="h-3 w-3" />
+                  Inspected & Verified by Vertex
+                </span>
+              )}
             </div>
             
             <h1 className={`text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 ${isLuxury ? "font-serif text-slate-950" : ""}`}>
