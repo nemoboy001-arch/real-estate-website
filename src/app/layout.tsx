@@ -40,6 +40,15 @@ export const metadata: Metadata = {
     title: "Vertex Real Estate",
     description: "Discover exceptional residential sales, luxury homes, premium rentals, and commercial real estate with Vertex.",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
