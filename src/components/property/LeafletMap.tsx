@@ -69,15 +69,15 @@ export default function LeafletMap({
           attributionControl: false,
         });
 
-        // Add Tile Layer (CartoDB Positron for clean luxury look or ESRI Satellite)
+        // Add Tile Layer (ESRI World Street Map & ESRI Satellite - 100% free with NO API key / NO watermark)
         const tileUrl =
           mapType === "satellite"
             ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+            : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}";
 
         L.tileLayer(tileUrl, {
           maxZoom: 19,
-          subdomains: "abcd",
+          subdomains: ["server", "services"],
         }).addTo(map);
 
         // Custom pulsing marker icon
@@ -87,44 +87,41 @@ export default function LeafletMap({
         const customIcon = L.divIcon({
           className: "custom-leaflet-marker",
           html: `
-            <div style="position: relative; display: flex; align-items: center; justify-content: center; transform: translate(-50%, -100%);">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;">
               <div style="
                 background: ${isLuxury ? "#f59e0b" : "#2563eb"};
                 color: ${isLuxury ? "#0f172a" : "#ffffff"};
-                padding: 6px 12px;
+                padding: 6px 14px;
                 border-radius: 9999px;
                 font-weight: 800;
                 font-size: 11px;
                 letter-spacing: 0.05em;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.4);
                 display: flex;
                 align-items: center;
                 gap: 5px;
                 border: 2px solid white;
                 white-space: nowrap;
-                cursor: pointer;
+                transform: translateY(-2px);
               ">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
-                ${formattedPrice || "Vertex Realty"}
+                ${formattedPrice || "Vertex Property"}
               </div>
               <div style="
-                position: absolute;
-                bottom: -6px;
-                left: 50%;
-                transform: translateX(-50%);
                 width: 0;
                 height: 0;
                 border-left: 6px solid transparent;
                 border-right: 6px solid transparent;
                 border-top: 6px solid ${isLuxury ? "#f59e0b" : "#2563eb"};
+                margin-top: -1px;
               "></div>
             </div>
           `,
-          iconSize: [0, 0],
-          iconAnchor: [0, 0],
+          iconSize: [140, 44],
+          iconAnchor: [70, 44],
         });
 
         const marker = L.marker([validLat, validLng], { icon: customIcon }).addTo(map);
@@ -162,7 +159,7 @@ export default function LeafletMap({
 
         marker.bindPopup(popupContent, {
           closeButton: true,
-          offset: [0, -35],
+          offset: [0, -38],
           className: "custom-leaflet-popup",
         });
 
@@ -298,4 +295,3 @@ export default function LeafletMap({
     </div>
   );
 }
-
