@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { School, Utensils, Bus, ShoppingBag, MapPin, Compass, Smile } from "lucide-react";
+import { School, Utensils, Bus, ShoppingBag, MapPin, Compass } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface NeighborhoodInsightsProps {
@@ -221,7 +221,7 @@ export default function NeighborhoodInsights({ city }: NeighborhoodInsightsProps
         <div className={`rounded-xl border p-3 text-center ${getScoreColorClass(data.bikeScore)}`}>
           <p className="text-[9px] font-bold uppercase tracking-wider opacity-85">Bike Score</p>
           <p className="text-xl font-black mt-1">{data.bikeScore}</p>
-          <p className="text-[8px] font-medium leading-tight mt-1 opacity-75">Biker's paradise</p>
+          <p className="text-[8px] font-medium leading-tight mt-1 opacity-75">Biker&apos;s paradise</p>
         </div>
       </div>
 

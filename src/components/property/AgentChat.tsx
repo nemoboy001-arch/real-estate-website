@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { MessageSquare, Send, X, ShieldCheck, Sparkles, ArrowRight, User } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { MessageSquare, Send, X, ShieldCheck } from "lucide-react";
 import { Agent, Property } from "@/data/mockData";
 
 interface AgentChatProps {
@@ -104,11 +104,13 @@ export default function AgentChat({ agent, property }: AgentChatProps) {
       {!isOpen ? (
         <div className="p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="relative">
-              <img
+            <div className="relative h-12 w-12 shrink-0">
+              <Image
                 src={agent.photo}
                 alt={agent.name}
-                className="h-12 w-12 rounded-full object-cover border border-slate-100 shadow-2xs"
+                fill
+                sizes="48px"
+                className="rounded-full object-cover border border-slate-100 shadow-2xs"
               />
               <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white animate-pulse" />
             </div>
@@ -135,11 +137,13 @@ export default function AgentChat({ agent, property }: AgentChatProps) {
           {/* Header */}
           <div className="p-4 bg-slate-900 text-white flex justify-between items-center border-b border-slate-800">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <img
+              <div className="relative h-9 w-9 shrink-0">
+                <Image
                   src={agent.photo}
                   alt={agent.name}
-                  className="h-9 w-9 rounded-full object-cover border border-slate-700 shadow-2xs"
+                  fill
+                  sizes="36px"
+                  className="rounded-full object-cover border border-slate-700 shadow-2xs"
                 />
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-slate-900 animate-pulse" />
               </div>

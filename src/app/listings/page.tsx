@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutGrid, List, SlidersHorizontal, Info } from "lucide-react";
@@ -263,10 +264,12 @@ function ListingsContent() {
                 >
                   {/* Left: Image */}
                   <div className="relative aspect-video md:aspect-auto md:w-80 h-48 md:h-auto shrink-0 overflow-hidden bg-slate-100">
-                    <img
+                    <Image
                       src={property.images[0]}
                       alt={property.title}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 320px"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   </div>
                   {/* Right: Info */}

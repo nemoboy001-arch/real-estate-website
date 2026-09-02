@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Search, MapPin, Building, Sparkles } from "lucide-react";
@@ -24,10 +25,13 @@ export default function Hero() {
     <div className="relative h-[85vh] min-h-[600px] w-full flex items-center justify-center overflow-hidden">
       {/* Background Image with Dark Vignette Overlay */}
       <div className="absolute inset-0 bg-slate-950">
-        <img
-          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1600&q=80"
+        <Image
+          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80"
           alt="Premium Real Estate Hero"
-          className="h-full w-full object-cover opacity-45 scale-105"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover opacity-45 scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
       </div>

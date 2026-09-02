@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Key, CheckCircle2 } from "lucide-react";
 import { properties } from "@/data/mockData";
@@ -13,10 +14,13 @@ export default function RentalsPage() {
     <div className="flex flex-col min-h-screen bg-slate-50">
       {/* Niche Hero */}
       <div className="relative h-[55vh] min-h-[400px] w-full flex items-center justify-center overflow-hidden bg-slate-950">
-        <img
-          src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1600&q=80"
+        <Image
+          src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1920&q=80"
           alt="Premium Apartment Rentals"
-          className="absolute inset-0 h-full w-full object-cover opacity-50 scale-105"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover opacity-50 scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
         

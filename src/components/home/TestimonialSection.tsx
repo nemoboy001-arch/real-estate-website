@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { testimonials } from "@/data/mockData";
@@ -58,8 +59,14 @@ export default function TestimonialSection() {
 
                 {/* Profile */}
                 <div className="mt-8 flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full overflow-hidden border border-slate-100 bg-slate-50">
-                    <img src={current.avatar} alt={current.name} className="h-full w-full object-cover" />
+                  <div className="relative h-12 w-12 rounded-full overflow-hidden border border-slate-100 bg-slate-50">
+                    <Image
+                      src={current.avatar}
+                      alt={current.name}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-bold text-slate-900">{current.name}</p>

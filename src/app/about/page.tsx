@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Building2, Compass, Award, ShieldCheck, HeartHandshake } from "lucide-react";
 
@@ -43,10 +44,12 @@ export default function AboutPage() {
         {/* Story Section */}
         <div className="mx-auto max-w-5xl rounded-3xl overflow-hidden shadow-xl bg-white border border-slate-100 grid grid-cols-1 md:grid-cols-2 items-stretch mb-20">
           <div className="relative h-64 md:h-auto min-h-[300px]">
-            <img
-              src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80"
+            <Image
+              src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80"
               alt="Vertex Office Headquarters"
-              className="absolute inset-0 h-full w-full object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
             />
           </div>
           <div className="p-8 sm:p-12 flex flex-col justify-center space-y-6">

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Calendar, Clock, Video, User, MapPin, Mail, Phone, CheckCircle, Sparkles } from "lucide-react";
+import React, { useState } from "react";
+import { Calendar, Clock, Video, User, MapPin, Mail, Phone, CheckCircle, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface TourSchedulerProps {
@@ -10,26 +10,16 @@ interface TourSchedulerProps {
   agentName: string;
 }
 
-interface Booking {
-  id: string;
-  propertyId: string;
-  propertyTitle: string;
-  date: string;
-  timeSlot: string;
-  tourType: "in_person" | "video";
-  clientName: string;
-  clientEmail: string;
-  clientPhone: string;
-  createdAt: string;
-}
-
 export default function TourScheduler({ propertyId, propertyTitle, agentName }: TourSchedulerProps) {
-  const [tourType, setTourType] = useState<"in_person" | "video">("in_person");
+  const [tourType, setTourType] = useState<"in-person" | "video">("in-person");
   const [selectedDayOffset, setSelectedDayOffset] = useState<number>(0);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", notes: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [confirmationData, setConfirmationData] = useState<{ confirmationCode?: string } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState<string | null>(null);
 
   // Generate next 7 days starting from tomorrow
   const daysList = Array.from({ length: 7 }, (_, i) => {
@@ -45,7 +35,7 @@ export default function TourScheduler({ propertyId, propertyTitle, agentName }: 
 
   const timeSlots = ["09:00 AM", "10:30 AM", "12:00 PM", "02:00 PM", "03:30 PM", "05:00 PM"];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
@@ -64,34 +54,60 @@ export default function TourScheduler({ propertyId, propertyTitle, agentName }: 
     if (!formData.email.trim()) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email address is invalid";
     if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSchedule = (e: React.FormEvent) => {
+  const handleSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
-    const booking: Booking = {
-      id: `booking-${Date.now()}`,
+    setIsSubmitting(true);
+    setApiError(null);
+
+    const payload = {
       propertyId,
       propertyTitle,
       date: daysList[selectedDayOffset].dateString,
       timeSlot: selectedTimeSlot,
       tourType,
-      clientName: formData.name,
-      clientEmail: formData.email,
-      clientPhone: formData.phone,
-      createdAt: new Date().toISOString(),
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      notes: formData.notes,
     };
 
-    // Save to local storage
-    const currentBookings = JSON.parse(localStorage.getItem("vertex_bookings") || "[]");
-    currentBookings.push(booking);
-    localStorage.setItem("vertex_bookings", JSON.stringify(currentBookings));
+    try {
+      const response = await fetch("/api/tours/schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    setIsSubmitted(true);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to schedule tour.");
+      }
+
+      setConfirmationData(data.booking || { confirmationCode: `VTX-${Date.now().toString().slice(-6)}` });
+      setIsSubmitted(true);
+
+      // Also persist to local storage for offline retrieval
+      try {
+        const currentBookings = JSON.parse(localStorage.getItem("vertex_bookings") || "[]");
+        currentBookings.push(data.booking || payload);
+        localStorage.setItem("vertex_bookings", JSON.stringify(currentBookings));
+      } catch (err) {
+        console.warn("Could not write booking to localStorage", err);
+      }
+    } catch (err: any) {
+      console.error("Booking submission error:", err);
+      setApiError(err.message || "An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -116,13 +132,20 @@ export default function TourScheduler({ propertyId, propertyTitle, agentName }: 
             onSubmit={handleSchedule}
             className="space-y-6"
           >
+            {apiError && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl">
+                <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+                <span>{apiError}</span>
+              </div>
+            )}
+
             {/* Tour Type Selector */}
             <div className="grid grid-cols-2 gap-3 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
               <button
                 type="button"
-                onClick={() => setTourType("in_person")}
+                onClick={() => setTourType("in-person")}
                 className={`flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
-                  tourType === "in_person"
+                  tourType === "in-person"
                     ? "bg-white text-slate-900 shadow-xs border border-slate-200/50"
                     : "text-slate-500 hover:text-slate-900"
                 }`}
@@ -272,10 +295,20 @@ export default function TourScheduler({ propertyId, propertyTitle, agentName }: 
             {/* Submit button */}
             <button
               type="submit"
-              className="w-full rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 text-xs uppercase tracking-wider transition-colors duration-200 shadow-md flex items-center justify-center gap-2"
+              disabled={isSubmitting}
+              className="w-full rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-75 text-white font-bold py-4 text-xs uppercase tracking-wider transition-colors duration-200 shadow-md flex items-center justify-center gap-2"
             >
-              <Sparkles className="h-4 w-4 text-blue-400" />
-              Request Private Tour
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                  Processing Appointment...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 text-blue-400" />
+                  Request Private Tour
+                </>
+              )}
             </button>
           </motion.form>
         ) : (
@@ -291,16 +324,22 @@ export default function TourScheduler({ propertyId, propertyTitle, agentName }: 
             </div>
             <h4 className="text-sm font-bold text-slate-800">Tour Requested Successfully!</h4>
             <p className="text-xs text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">
-              We have dispatched your request. The listing specialist **{agentName}** will contact you within 2 hours to confirm your appointment details.
+              We have dispatched your request. Listing specialist <strong className="text-slate-800">{agentName}</strong> will contact you within 2 hours to confirm your appointment.
             </p>
 
-            <div className="mt-6 p-4 rounded-xl bg-slate-50 text-left border border-slate-100 space-y-2 text-xs">
+            {confirmationData?.confirmationCode && (
+              <div className="my-4 inline-block px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl text-xs font-bold text-blue-800">
+                Confirmation Code: <span className="font-mono">{confirmationData.confirmationCode}</span>
+              </div>
+            )}
+
+            <div className="mt-4 p-4 rounded-xl bg-slate-50 text-left border border-slate-100 space-y-2 text-xs">
               <p className="text-slate-500"><strong className="text-slate-700">Property:</strong> {propertyTitle}</p>
               <p className="text-slate-500">
                 <strong className="text-slate-700">Schedule:</strong> {daysList[selectedDayOffset].dayName}, {daysList[selectedDayOffset].month} {daysList[selectedDayOffset].dayNum} @ {selectedTimeSlot}
               </p>
               <p className="text-slate-500">
-                <strong className="text-slate-700">Tour Format:</strong> {tourType === "in_person" ? "In-Person Tour" : "Virtual Video Consultation"}
+                <strong className="text-slate-700">Tour Format:</strong> {tourType === "in-person" ? "In-Person Tour" : "Virtual Video Consultation"}
               </p>
             </div>
 
@@ -309,7 +348,7 @@ export default function TourScheduler({ propertyId, propertyTitle, agentName }: 
               onClick={() => {
                 setIsSubmitted(false);
                 setSelectedTimeSlot("");
-                setFormData({ name: "", email: "", phone: "" });
+                setFormData({ name: "", email: "", phone: "", notes: "" });
               }}
               className="mt-6 text-xs text-blue-600 hover:text-blue-800 font-bold uppercase tracking-wider"
             >

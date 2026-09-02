@@ -1,17 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Send, CheckCircle, Loader2 } from "lucide-react";
+import { Send, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import { Agent } from "@/data/mockData";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(10, "Please enter a valid phone number (min 10 digits)"),
-  message: z.string().min(10, "Message must be at least 10 characters"),
+  phone: z.string().min(7, "Please enter a valid phone number"),
+  message: z.string().min(5, "Message must be at least 5 characters"),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -19,11 +20,14 @@ type ContactFormData = z.infer<typeof contactSchema>;
 interface ContactAgentFormProps {
   agent?: Agent;
   propertyName?: string;
+  propertyId?: string;
 }
 
-export default function ContactAgentForm({ agent, propertyName }: ContactAgentFormProps) {
+export default function ContactAgentForm({ agent, propertyName, propertyId }: ContactAgentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [ticketId, setTicketId] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const {
     register,
@@ -37,13 +41,37 @@ export default function ContactAgentForm({ agent, propertyName }: ContactAgentFo
     },
   });
 
-  const onSubmit = async (_data: ContactFormData) => {
+  const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
-    // Simulate API request
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    reset();
+    setApiError(null);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          propertyName,
+          propertyId,
+          agentId: agent?.id,
+        }),
+      });
+
+      const resData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(resData.error || "Failed to send inquiry.");
+      }
+
+      setTicketId(resData.inquiry?.ticketId || `INQ-${Math.floor(10000 + Math.random() * 90000)}`);
+      setIsSuccess(true);
+      reset();
+    } catch (err: any) {
+      console.error("Contact inquiry error:", err);
+      setApiError(err.message || "An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -51,7 +79,13 @@ export default function ContactAgentForm({ agent, propertyName }: ContactAgentFo
       {agent && (
         <div className="flex items-center gap-4 border-b border-slate-100 pb-5 mb-5">
           <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border bg-slate-50">
-            <img src={agent.photo} alt={agent.name} className="h-full w-full object-cover" />
+            <Image
+              src={agent.photo}
+              alt={agent.name}
+              fill
+              sizes="48px"
+              className="object-cover"
+            />
           </div>
           <div>
             <h4 className="text-sm font-bold text-slate-900">Inquiry for {agent.name}</h4>
@@ -66,6 +100,11 @@ export default function ContactAgentForm({ agent, propertyName }: ContactAgentFo
             <CheckCircle className="h-12 w-12 text-emerald-500" />
           </div>
           <h4 className="text-base font-bold text-slate-900">Inquiry Submitted!</h4>
+          {ticketId && (
+            <p className="text-xs font-semibold text-blue-600 my-2">
+              Ticket ID: <span className="font-mono">{ticketId}</span>
+            </p>
+          )}
           <p className="text-xs text-slate-500 mt-2 max-w-xs mx-auto">
             Thank you. We have received your inquiry and an agent will contact you shortly.
           </p>
@@ -79,6 +118,13 @@ export default function ContactAgentForm({ agent, propertyName }: ContactAgentFo
         </div>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {apiError && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl">
+              <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+              <span>{apiError}</span>
+            </div>
+          )}
+
           {/* Full Name */}
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Full Name</label>

@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { ShieldCheck, User, Phone, Briefcase, Award, CheckCircle, FileText, Upload, AlertCircle, Loader2, Key } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { ShieldCheck, Briefcase, CheckCircle, FileText, Upload, AlertCircle, Loader2, Key } from "lucide-react";
 import { useAuth } from "@/context/authcontext";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 
@@ -240,11 +241,13 @@ export default function ProfilePage() {
           <div className="space-y-8">
             {/* Profile Glance Card */}
             <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm flex flex-col items-center text-center">
-              <div className="relative mb-4">
-                <img
-                  src={avatarUrl}
-                  alt={fullName}
-                  className="h-28 w-28 rounded-full object-cover border-2 border-slate-100 shadow-sm"
+              <div className="relative mb-4 h-28 w-28 shrink-0">
+                <Image
+                  src={avatarUrl || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&h=400&q=80"}
+                  alt={fullName || "User Avatar"}
+                  fill
+                  sizes="112px"
+                  className="rounded-full object-cover border-2 border-slate-100 shadow-sm"
                 />
                 {profile?.verified && (
                   <span className="absolute bottom-1 right-1 bg-amber-500 text-slate-950 p-1.5 rounded-full shadow-md border-2 border-white">
@@ -506,25 +509,25 @@ export default function ProfilePage() {
                       </div>
                       
                       {listing.status === "approved" && (
-                        <a
+                        <Link
                           href={`/listings/${listing.id}`}
                           className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 py-2.5 text-3xs uppercase tracking-wider transition-colors shadow-2xs text-center shrink-0"
                         >
                           View Listing
-                        </a>
+                        </Link>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="border border-dashed border-slate-200 rounded-xl py-12 text-center">
-                  <p className="text-xs text-slate-400 font-medium">You haven't submitted any listings yet.</p>
-                  <a
+                  <p className="text-xs text-slate-400 font-medium">You haven&apos;t submitted any listings yet.</p>
+                  <Link
                     href="/listings/new"
                     className="mt-3 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-bold"
                   >
                     Submit a Listing &rarr;
-                  </a>
+                  </Link>
                 </div>
               )}
             </div>

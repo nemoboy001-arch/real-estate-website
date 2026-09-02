@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { MoveHorizontal, Compass, RefreshCw, ZoomIn, ZoomOut, Play, Pause, AlertCircle, Eye } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface VirtualTourProps {
   propertyTitle: string;

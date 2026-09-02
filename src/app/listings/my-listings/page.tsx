@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { PlusCircle, FileText, CheckCircle, Clock, XCircle, Trash2, ArrowRight, ShieldAlert, Upload, Loader2, Sparkles, Home } from "lucide-react";
 import { useAuth } from "@/context/authcontext";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
@@ -313,11 +314,12 @@ export default function MyListingsPage() {
                   <div>
                     {/* Listing Image */}
                     <div className="h-48 relative overflow-hidden bg-slate-100">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={item.images[0]}
                         alt={item.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover"
                       />
                       
                       {/* Status Badge overlays */}

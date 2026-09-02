@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Sparkles, Award, EyeOff, ShieldCheck } from "lucide-react";
 import { properties } from "@/data/mockData";
@@ -13,10 +14,13 @@ export default function LuxuryPage() {
     <div className="flex flex-col min-h-screen bg-slate-950 text-white">
       {/* Niche Hero */}
       <div className="relative h-[65vh] min-h-[450px] w-full flex items-center justify-center overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1600&q=80"
+        <Image
+          src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1920&q=80"
           alt="Luxury Mansion Estate"
-          className="absolute inset-0 h-full w-full object-cover opacity-35 scale-105"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover opacity-35 scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
         

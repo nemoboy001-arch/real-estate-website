@@ -30,13 +30,21 @@ export default function ContactPage() {
     resolver: zodResolver(contactSchema),
   });
 
-  const onSubmit = async (_data: ContactFormData) => {
+  const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
-    // Simulate API request
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    reset();
+    try {
+      await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      setIsSuccess(true);
+      reset();
+    } catch (err) {
+      console.error("Contact error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Sparkles, X, Send, Bot, ArrowRight, Home, Building, Key, Compass } from "lucide-react";
 import { properties, Property } from "@/data/mockData";
 import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
@@ -327,10 +328,12 @@ export default function AIAssistant() {
                             className="flex items-center gap-3 p-2 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-xl transition-all hover:border-slate-300 shadow-2xs group"
                           >
                             <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 bg-slate-100 relative">
-                              <img
+                              <Image
                                 src={p.images[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=150&h=150&q=80"}
                                 alt={p.title}
-                                className="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                                fill
+                                sizes="40px"
+                                className="object-cover group-hover:scale-105 transition-transform"
                               />
                             </div>
                             <div className="min-w-0 flex-1">
