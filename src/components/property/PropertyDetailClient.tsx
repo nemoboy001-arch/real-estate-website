@@ -210,7 +210,7 @@ export default function PropertyDetailClient({
               {(property as any).is_inspected && (
                 <span className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white border border-amber-400 px-3 py-1 text-2xs font-black uppercase tracking-wider shadow-xs flex items-center gap-1">
                   <Award className="h-3 w-3" />
-                  Inspected & Verified by Vertex
+                  Inspected & Verified by Peculiar Aesthetics
                 </span>
               )}
             </div>

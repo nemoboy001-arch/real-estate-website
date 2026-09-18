@@ -37,7 +37,7 @@ export default function AboutPage() {
             Redefining Properties, Elevating Standards
           </h1>
           <p className="mt-4 text-xs sm:text-sm text-slate-500 leading-relaxed max-w-xl mx-auto">
-            Founded in 2012, Vertex Realty was built on a simple premise: real estate requires specialized local expertise, not generic representation.
+            Founded in 2012, Peculiar Aesthetics was built on a simple premise: real estate requires specialized local expertise, not generic representation.
           </p>
         </div>
 
@@ -46,7 +46,7 @@ export default function AboutPage() {
           <div className="relative h-64 md:h-auto min-h-[300px]">
             <Image
               src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80"
-              alt="Vertex Office Headquarters"
+              alt="Peculiar Aesthetics Office Headquarters"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
@@ -58,7 +58,7 @@ export default function AboutPage() {
               We recognized that buyers searching for luxury estates had entirely different goals than corporations seeking warehouse logistics hubs. By restructuring our agency into dedicated, specialized divisions (Residential, Luxury, Rentals, and Commercial), we created a system that delivers expert guidance for every transaction type.
             </p>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Today, Vertex has grown from a boutique firm in Los Angeles to a premier agency overseeing more than $500M in annual transactions. Our commitment to deep analytics, off-market databases, and white-glove client service remains unchanged.
+              Today, Peculiar Aesthetics has grown from a boutique firm in Los Angeles to a premier agency overseeing more than $500M in annual transactions. Our commitment to deep analytics, off-market databases, and white-glove client service remains unchanged.
             </p>
           </div>
         </div>

@@ -25,11 +25,11 @@ export async function POST(req: Request) {
                 {
                   parts: [
                     {
-                      text: `You are the Vertex Realty AI Assistant, a professional real estate chatbot. You assist clients and agents on the Vertex website.
+                      text: `You are the Peculiar Aesthetics AI Assistant, a professional real estate chatbot. You assist clients and agents on the Peculiar Aesthetics website.
                       
                       Website context:
                       - Features: Search/filters, saved favorites, comparing up to 3 listings side-by-side, 360° virtual tours on property pages, an interactive week-strip Tour Scheduler, direct sidebar messaging with agents, a verified agents program where agents upload their National Identification Number (NIN) to receive a gold shield badge, and an admin panel where admins moderate listings and check deeds.
-                      - Contact: phone (555) 124-5678, email info@vertexrealestate.com, office 777 Wilshire Blvd, Los Angeles, CA.
+                      - Contact: phone (+234) 80-3860-3853, email info@peculiaraesthetics.com, office 777 Wilshire Blvd, Los Angeles, CA.
                       - Niche categories: Residential, Luxury, Rentals, Commercial, Land.
                       
                       Answer the user's query professionally, concisely, and supportively in markdown formatting.
@@ -60,30 +60,30 @@ export async function POST(req: Request) {
     const match = (keywords: string[]) => keywords.some((kw) => lowerText.includes(kw));
 
     if (match(["hello", "hi", "hey", "yo", "greetings", "good morning", "good afternoon"])) {
-      replyText = `Hello! I am the Vertex AI Assistant. I can answer questions about finding properties, booking tours, listing uploads, agent verification, commissions, neighborhood walk scores, and more. 
+      replyText = `Hello! I am the Peculiar Aesthetics AI Assistant. I can answer questions about finding properties, booking tours, listing uploads, agent verification, commissions, neighborhood walk scores, and more. 
 
 What can I help you with today?`;
       suggestions = ["Browse All Listings", "How to list a property?", "Verify agent account"];
     } 
     
-    else if (match(["who are you", "what is this site", "about us", "vertex", "company", "what is vertex"])) {
-      replyText = `**Vertex Realty** is a premium, state-of-the-art real estate platform specializing in niche property listings: Residential, Luxury Estates, Rentals, Commercial Hubs, and Land Acreage. 
+    else if (match(["who are you", "what is this site", "about us", "peculiar", "aesthetics", "company", "vertex"])) {
+      replyText = `**Peculiar Aesthetics** is a premium, state-of-the-art real estate platform specializing in niche property listings: Residential, Luxury Estates, Rentals, Commercial Hubs, and Land Acreage. 
       
 Our platform connects verified agents directly with buyers, offering features like interactive 3D virtual tours, real-time agent chat, neighborhood analytics, and a booking tour scheduler.`;
       suggestions = ["Our Team Directory", "Explore Luxury Estates", "Contact Us"];
     } 
     
     else if (match(["contact", "phone", "email", "number", "call", "office", "address", "hq", "location", "hours", "open"])) {
-      replyText = `You can contact the **Vertex Realty** team using any of these channels:
-* 📞 **Phone**: (555) 124-5678 (Available Monday - Friday, 9:00 AM - 6:00 PM EST)
-* ✉️ **Email**: info@vertexrealestate.com
+      replyText = `You can contact the **Peculiar Aesthetics** team using any of these channels:
+* 📞 **Phone**: (+234) 80-3860-3853 (Available Monday - Friday, 9:00 AM - 6:00 PM EST)
+* ✉️ **Email**: info@peculiaraesthetics.com
 * 📍 **Office Headquarters**: 777 Wilshire Blvd, Los Angeles, CA 90017
 * 🕒 **Business Hours**: Monday to Friday: 9:00 AM - 6:00 PM, Saturday: 10:00 AM - 4:00 PM (Closed Sundays).`;
       suggestions = ["Visit Contact Page", "Browse Our Team"];
     } 
     
     else if (match(["how to list", "submit listing", "list property", "upload property", "sell my house", "add property", "new listing"])) {
-      replyText = `To list a property on Vertex:
+      replyText = `To list a property on Peculiar Aesthetics:
 1. Log in to your **Agent Portal** (register an account if you don't have one).
 2. Click **Submit Listing** in the top navigation bar.
 3. Fill out the details (title, description, price, specs, location, and photo URLs).
@@ -209,7 +209,7 @@ All leases support monthly payments.`;
     
     else {
       // General fallbacks directing users to site features
-      replyText = `I am here to help guide you through the Vertex Real Estate website! 
+      replyText = `I am here to help guide you through the Peculiar Aesthetics website! 
       
 You can ask me questions about:
 * **Finding Listings**: *"Show me Venice lofts"*, *"Luxury estates in Beverly Hills"*

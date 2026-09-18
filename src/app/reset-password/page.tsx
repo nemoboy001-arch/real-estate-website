@@ -64,7 +64,7 @@ export default function ResetPasswordPage() {
         <div className="text-center relative z-10">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-2xs font-extrabold tracking-widest uppercase text-blue-600 border border-blue-500/20">
             <Sparkles className="h-3 w-3" />
-            Vertex Brokerage
+            Peculiar Aesthetics
           </span>
           <h2 className="mt-6 text-3xl font-extrabold font-serif text-slate-900 tracking-tight">
             Choose New Password

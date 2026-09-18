@@ -1,32 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
   <defs>
-    <linearGradient id="bgAppleBold" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bgApplePA" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#020617"/>
       <stop offset="100%" stop-color="#0f172a"/>
     </linearGradient>
-    <linearGradient id="goldAppleBold" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="goldApplePA" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#fef08a"/>
       <stop offset="25%" stop-color="#fbbf24"/>
       <stop offset="70%" stop-color="#f59e0b"/>
       <stop offset="100%" stop-color="#d97706"/>
     </linearGradient>
-    <filter id="shadowApple" x="-20%" y="-20%" width="140%" height="140%">
+    <filter id="shadowApplePA" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#f59e0b" flood-opacity="0.6"/>
     </filter>
   </defs>
 
-  <rect width="180" height="180" rx="40" fill="url(#bgAppleBold)"/>
-  <rect x="5" y="5" width="170" height="170" rx="35" fill="none" stroke="url(#goldAppleBold)" stroke-width="8"/>
+  <rect width="180" height="180" rx="40" fill="url(#bgApplePA)"/>
+  <rect x="5" y="5" width="170" height="170" rx="35" fill="none" stroke="url(#goldApplePA)" stroke-width="8"/>
 
   <!-- Bold Architectural Peak -->
-  <path d="M90 26L20 78L38 92L90 53L142 92L160 78L90 26Z" fill="url(#goldAppleBold)" filter="url(#shadowApple)"/>
+  <path d="M90 26L20 78L38 92L90 53L142 92L160 78L90 26Z" fill="url(#goldApplePA)" filter="url(#shadowApplePA)"/>
   
   <!-- Bold Pillars -->
-  <path d="M42 100V144H64V118H116V144H138V100" fill="url(#goldAppleBold)"/>
+  <path d="M42 100V144H64V118H116V144H138V100" fill="url(#goldApplePA)"/>
   
-  <!-- Extra Bold Vertex "V" Chevron -->
-  <path d="M56 86L90 128L124 86" fill="none" stroke="url(#goldAppleBold)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Bold PA Monogram -->
+  <!-- Letter P -->
+  <path d="M60 134V88H80C90 88 96 94 96 103C96 112 90 118 80 118H60" fill="none" stroke="url(#goldApplePA)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Letter A -->
+  <path d="M96 134L118 88L136 134" fill="none" stroke="url(#goldApplePA)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M104 120H128" stroke="url(#goldApplePA)" stroke-width="9" stroke-linecap="round"/>
   
   <!-- Keystone -->
-  <circle cx="90" cy="76" r="8" fill="#ffffff"/>
+  <circle cx="90" cy="70" r="7" fill="#ffffff"/>
 </svg>

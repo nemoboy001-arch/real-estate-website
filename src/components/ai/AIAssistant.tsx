@@ -30,7 +30,7 @@ function getInitialMessages(): Message[] {
     {
       id: "msg-welcome",
       sender: "bot",
-      text: `Hello! I am your Vertex AI Assistant. How can I help you navigate listings or agent services today?`,
+      text: `Hello! I am your Peculiar Aesthetics AI Assistant. How can I help you navigate listings or agent services today?`,
       timestamp: new Date(),
       suggestions: [
         "Show me rentals under $4,000",
@@ -176,15 +176,15 @@ export default function AIAssistant() {
       const match = (keywords: string[]) => keywords.some((kw) => lowerText.includes(kw));
 
       if (match(["hello", "hi", "hey", "yo", "greetings"])) {
-        replyText = `Hi there! I am the Vertex AI Assistant. I can help search for properties, schedule tours, or guide you with agent and listing submissions. What can I find for you?`;
+        replyText = `Hi there! I am the Peculiar Aesthetics AI Assistant. I can help search for properties, schedule tours, or guide you with agent and listing submissions. What can I find for you?`;
         suggestions = ["Show me rentals under $4,000", "Find land sites"];
       } 
-      else if (match(["who are you", "what is this site", "vertex", "company"])) {
-        replyText = `Vertex Realty is a premium real estate platform specializing in Residential, Luxury, Rentals, Commercial, and Land properties. We offer features like interactive 3D virtual tours, neighborhood guides, and direct agent chats.`;
+      else if (match(["who are you", "what is this site", "peculiar", "aesthetics", "company", "vertex"])) {
+        replyText = `Peculiar Aesthetics is a premier real estate platform specializing in Residential, Luxury, Rentals, Commercial, and Land properties. We offer features like interactive 3D virtual tours, neighborhood guides, and direct agent chats.`;
         suggestions = ["Explore Luxury Estates", "Contact Us"];
       }
       else if (match(["contact", "phone", "email", "number", "call", "office", "address", "hq"])) {
-        replyText = `You can reach Vertex Realty via:\n* 📞 Phone: (555) 124-5678\n* ✉️ Email: info@vertexrealestate.com\n* 📍 Headquarters: 777 Wilshire Blvd, Los Angeles, CA.`;
+        replyText = `You can reach Peculiar Aesthetics via:\n* 📞 Phone: (+234) 80-3860-3853\n* ✉️ Email: info@peculiaraesthetics.com\n* 📍 Headquarters: 777 Wilshire Blvd, Los Angeles, CA.`;
         suggestions = ["Visit Contact Page"];
       }
       else if (match(["list", "submit", "upload", "sell", "add property", "new listing"])) {
@@ -277,7 +277,7 @@ export default function AIAssistant() {
                 <Sparkles className="h-4.5 w-4.5 animate-pulse" />
               </div>
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider font-sans">Vertex AI Assistant</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider font-sans">Peculiar Aesthetics AI</h4>
                 <p className="text-4xs text-slate-400 font-semibold uppercase tracking-widest flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
                   Online & Ready

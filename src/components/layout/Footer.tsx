@@ -23,13 +23,13 @@ export default function Footer() {
           {/* Brand section */}
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <span className={`text-2xl font-serif tracking-widest font-semibold ${isLuxuryPage ? "text-amber-400" : "text-white"}`}>
-                VERTEX
+              <span className={`text-xl font-serif tracking-wider font-semibold ${isLuxuryPage ? "text-amber-400" : "text-white"}`}>
+                PECULIAR
               </span>
-              <span className={`text-[10px] tracking-[0.25em] font-sans font-bold px-1.5 py-0.5 rounded ${
+              <span className={`text-[10px] tracking-[0.2em] font-sans font-bold px-1.5 py-0.5 rounded ${
                 isLuxuryPage ? "bg-amber-400/15 text-amber-400 border border-amber-400/25" : "bg-slate-800 text-slate-200"
               }`}>
-                REALTY
+                AESTHETICS
               </span>
             </div>
             <p className={`text-sm max-w-xs ${isLuxuryPage ? "text-slate-400" : "text-slate-300"}`}>
@@ -100,7 +100,7 @@ export default function Footer() {
                 </li>
                 <li className="flex items-center gap-2.5 text-sm">
                   <Mail className="h-4 w-4 shrink-0" />
-                  <a href="mailto:info@vertexrealestate.com" className="hover:text-white transition-colors">info@vertexrealestate.com</a>
+                  <a href="mailto:info@peculiaraesthetics.com" className="hover:text-white transition-colors">info@peculiaraesthetics.com</a>
                 </li>
               </ul>
             </div>
@@ -109,7 +109,7 @@ export default function Footer() {
 
         <div className="mt-12 border-t pt-8 xl:grid xl:grid-cols-3 xl:gap-8 border-slate-800">
           <p className="text-xs text-slate-400 xl:col-span-2">
-            &copy; {currentYear} Vertex Realty. All rights reserved. Equal Housing Opportunity.
+            &copy; {currentYear} Peculiar Aesthetics. All rights reserved. Equal Housing Opportunity.
           </p>
           <div className="mt-4 flex space-x-6 xl:col-span-1 xl:justify-end xl:mt-0">
             <a href="#" className="text-xs text-slate-400 hover:text-white transition-colors">Privacy Policy</a>

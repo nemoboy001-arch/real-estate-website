@@ -23,22 +23,22 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: "Vertex Real Estate | Premium Properties & Luxury Estates",
-    template: "%s | Vertex Real Estate",
+    default: "Peculiar Aesthetics | Premium Properties & Luxury Estates",
+    template: "%s | Peculiar Aesthetics",
   },
-  description: "Discover exceptional residential sales, luxury homes, premium rentals, and commercial real estate with Vertex. Connect with top brokers and find your perfect property today.",
-  keywords: ["real estate", "luxury homes", "apartments for rent", "commercial properties", "house for sale", "property search"],
-  authors: [{ name: "Vertex Group" }],
+  description: "Discover exceptional residential sales, luxury homes, premium rentals, and commercial real estate with Peculiar Aesthetics. Connect with top brokers and find your perfect property today.",
+  keywords: ["real estate", "luxury homes", "apartments for rent", "commercial properties", "house for sale", "property search", "Peculiar Aesthetics"],
+  authors: [{ name: "Peculiar Aesthetics Group" }],
   openGraph: {
-    title: "Vertex Real Estate",
-    description: "Discover exceptional residential sales, luxury homes, premium rentals, and commercial real estate with Vertex.",
+    title: "Peculiar Aesthetics",
+    description: "Discover exceptional residential sales, luxury homes, premium rentals, and commercial real estate with Peculiar Aesthetics.",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Vertex Real Estate",
-    description: "Discover exceptional residential sales, luxury homes, premium rentals, and commercial real estate with Vertex.",
+    title: "Peculiar Aesthetics",
+    description: "Discover exceptional residential sales, luxury homes, premium rentals, and commercial real estate with Peculiar Aesthetics.",
   },
   icons: {
     icon: [

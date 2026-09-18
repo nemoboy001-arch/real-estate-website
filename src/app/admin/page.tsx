@@ -66,8 +66,8 @@ export default function AdminPage() {
       if (!isSupabaseConfigured()) {
         // Load mock queues for demo mode
         setPendingAgents([
-          { id: "mock-agent-1", full_name: "John Jameson", phone: "(555) 321-9876", email: "john.j@vertex.com", verified: false, created_at: new Date().toISOString(), nin_document_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
-          { id: "mock-agent-2", full_name: "Clara Oswald", phone: "(555) 765-4321", email: "clara@vertex.com", verified: false, created_at: new Date().toISOString(), nin_document_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
+          { id: "mock-agent-1", full_name: "John Jameson", phone: "(555) 321-9876", email: "john.j@peculiaraesthetics.com", verified: false, created_at: new Date().toISOString(), nin_document_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
+          { id: "mock-agent-2", full_name: "Clara Oswald", phone: "(555) 765-4321", email: "clara@peculiaraesthetics.com", verified: false, created_at: new Date().toISOString(), nin_document_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
         ]);
         setPendingListings([
           { id: "mock-listing-1", title: "Modernist Concrete Loft", price: 1250000, category: "residential", listing_type: "sale", address: "505 Concrete Ave", city: "Los Angeles", posted_by_name: "Sarah Jenkins", status: "pending", proof_document_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },

@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
         <div className="text-center relative z-10">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-2xs font-extrabold tracking-widest uppercase text-blue-600 border border-blue-500/20">
             <Sparkles className="h-3 w-3" />
-            Vertex Brokerage
+            Peculiar Aesthetics
           </span>
           <h2 className="mt-6 text-3xl font-extrabold font-serif text-slate-900 tracking-tight">
             Reset Password
@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
                 <Mail className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                   type="email"
-                  placeholder="agent@vertexrealestate.com"
+                  placeholder="agent@peculiaraesthetics.com"
                   {...register("email")}
                   className={`w-full rounded-xl border py-2.5 pr-4 pl-10 text-xs outline-hidden focus:ring-1 focus:ring-blue-600/20 ${
                     errors.email ? "border-red-500 focus:border-red-500" : "border-slate-200 focus:border-blue-600"

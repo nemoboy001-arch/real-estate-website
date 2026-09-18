@@ -72,15 +72,15 @@ export default function Navbar() {
         {/* LOGO */}
         <div className="flex lg:flex-1">
           <Link href="/" className="flex items-center gap-2 group">
-            <span className={`text-2xl font-serif tracking-widest font-semibold transition-colors duration-300 ${
+            <span className={`text-xl sm:text-2xl font-serif tracking-wider font-semibold transition-colors duration-300 ${
               isLuxuryPage ? "text-amber-400 group-hover:text-white" : scrolled ? "text-slate-900 group-hover:text-slate-700" : "text-slate-900 group-hover:text-slate-700"
             } ${!scrolled && isLuxuryPage ? "text-amber-400 group-hover:text-white" : ""}`}>
-              VERTEX
+              PECULIAR
             </span>
-            <span className={`text-[10px] tracking-[0.25em] font-sans font-bold px-1.5 py-0.5 rounded ${
+            <span className={`text-[10px] tracking-[0.2em] font-sans font-bold px-1.5 py-0.5 rounded ${
               isLuxuryPage ? "bg-amber-400/10 text-amber-400 border border-amber-400/20" : "bg-slate-900 text-white"
             }`}>
-              REALTY
+              AESTHETICS
             </span>
           </Link>
         </div>
@@ -291,9 +291,14 @@ export default function Navbar() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <Link href="/" className="flex items-center gap-2">
-                  <span className={`text-xl font-serif tracking-widest font-semibold ${isLuxuryPage ? "text-amber-400" : "text-slate-900"}`}>
-                    VERTEX
+                <Link href="/" className="flex items-center gap-1.5">
+                  <span className={`text-lg font-serif tracking-wider font-semibold ${isLuxuryPage ? "text-amber-400" : "text-slate-900"}`}>
+                    PECULIAR
+                  </span>
+                  <span className={`text-[9px] tracking-wider font-sans font-bold px-1.5 py-0.5 rounded ${
+                    isLuxuryPage ? "bg-amber-400/10 text-amber-400 border border-amber-400/20" : "bg-slate-900 text-white"
+                  }`}>
+                    AESTHETICS
                   </span>
                 </Link>
                 <button

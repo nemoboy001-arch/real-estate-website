@@ -266,7 +266,7 @@ export default function NewListingPage() {
             Submit A New Listing
           </h1>
           <p className="mt-1 text-xs text-slate-500">
-            List premium homes, luxury estates, and commercial spaces on Vertex.
+            List premium homes, luxury estates, and commercial spaces on Peculiar Aesthetics.
           </p>
         </div>
 

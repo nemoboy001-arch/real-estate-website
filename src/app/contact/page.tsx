@@ -79,7 +79,7 @@ export default function ContactPage() {
                 <li className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                   <span>
-                    <strong>Vertex Realty Group</strong>
+                    <strong>Peculiar Aesthetics Group</strong>
                     <br />
                     777 Wilshire Blvd, Suite 100
                     <br />
@@ -88,11 +88,11 @@ export default function ContactPage() {
                 </li>
                 <li className="flex items-center gap-3">
                   <Phone className="h-5 w-5 text-blue-600 shrink-0" />
-                  <a href="tel:5551245678" className="hover:text-blue-600 hover:underline">(555) 124-5678</a>
+                  <a href="tel:5551245678" className="hover:text-blue-600 hover:underline">(+234) 80-3860-3853</a>
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail className="h-5 w-5 text-blue-600 shrink-0" />
-                  <a href="mailto:info@vertexrealestate.com" className="hover:text-blue-600 hover:underline">info@vertexrealestate.com</a>
+                  <a href="mailto:info@peculiaraesthetics.com" className="hover:text-blue-600 hover:underline">info@peculiaraesthetics.com</a>
                 </li>
               </ul>
             </div>

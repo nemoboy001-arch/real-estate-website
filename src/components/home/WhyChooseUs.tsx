@@ -35,9 +35,9 @@ export default function WhyChooseUs() {
     <section className="bg-slate-50 py-20 sm:py-28 border-y border-slate-100">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-2xs font-extrabold tracking-widest uppercase text-blue-600">The Vertex Difference</h2>
+          <h2 className="text-2xs font-extrabold tracking-widest uppercase text-blue-600">The Peculiar Aesthetics Difference</h2>
           <p className="mt-4 text-3xl font-extrabold font-serif tracking-tight text-slate-900 sm:text-4xl">
-            Why Discerning Clients Trust Vertex
+            Why Discerning Clients Trust Peculiar Aesthetics
           </p>
           <p className="mt-4 text-sm text-slate-500 leading-relaxed max-w-xl mx-auto">
             Combining state-of-the-art market data with an editorial approach to client services, we simplify real estate acquisitions.

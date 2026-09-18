@@ -19,7 +19,7 @@ export async function generateMetadata({
 
   if (!property) {
     return {
-      title: "Property Not Found | Vertex Real Estate",
+      title: "Property Not Found | Peculiar Aesthetics",
       description: "The requested property listing could not be found.",
     };
   }
@@ -29,7 +29,7 @@ export async function generateMetadata({
     ? `$${property.price.toLocaleString()}/mo`
     : `$${property.price.toLocaleString()}`;
 
-  const title = `${property.title} - ${formattedPrice} | Vertex Real Estate`;
+  const title = `${property.title} - ${formattedPrice} | Peculiar Aesthetics`;
   const description = property.description.slice(0, 160);
   const primaryImage =
     property.images[0] ||
@@ -44,7 +44,7 @@ export async function generateMetadata({
       property.location.city,
       property.listingType === "lease" ? "for rent" : "for sale",
       "luxury real estate",
-      "Vertex Realty",
+      "Peculiar Aesthetics",
     ],
     openGraph: {
       title,
@@ -83,7 +83,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     name: property.title,
     description: property.description,
     image: property.images,
-    url: `https://vertexrealty.com/listings/${property.id}`,
+    url: `https://peculiaraesthetics.com/listings/${property.id}`,
     datePosted: property.yearBuilt ? `${property.yearBuilt}-01-01` : "2024-01-01",
     offers: {
       "@type": "Offer",
