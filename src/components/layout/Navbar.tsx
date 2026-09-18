@@ -55,6 +55,8 @@ export default function Navbar() {
 
   
   const isLuxuryPage = pathname === "/luxury";
+  const hasDarkHero = ["/", "/luxury", "/residential", "/rentals", "/commercial"].includes(pathname);
+  const isDarkNav = !scrolled && hasDarkHero;
 
   return (
     <header
@@ -63,9 +65,9 @@ export default function Navbar() {
           ? isLuxuryPage
             ? "bg-slate-950/90 text-white shadow-lg border-b border-amber-920/20 backdrop-blur-md"
             : "bg-white/95 text-slate-900 shadow-md border-b border-slate-200/50 backdrop-blur-md"
-          : isLuxuryPage
-          ? "bg-transparent text-white border-b border-white/10"
-          : "bg-transparent text-slate-900 border-b border-slate-200/20"
+          : isDarkNav
+          ? "bg-gradient-to-b from-slate-950/80 via-slate-950/40 to-transparent text-white border-b border-white/10"
+          : "bg-white/95 text-slate-900 shadow-xs border-b border-slate-200/50 backdrop-blur-md"
       }`}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8" aria-label="Global">
@@ -73,12 +75,20 @@ export default function Navbar() {
         <div className="flex lg:flex-1">
           <Link href="/" className="flex items-center gap-2 group">
             <span className={`text-xl sm:text-2xl font-serif tracking-wider font-semibold transition-colors duration-300 ${
-              isLuxuryPage ? "text-amber-400 group-hover:text-white" : scrolled ? "text-slate-900 group-hover:text-slate-700" : "text-slate-900 group-hover:text-slate-700"
-            } ${!scrolled && isLuxuryPage ? "text-amber-400 group-hover:text-white" : ""}`}>
+              isLuxuryPage
+                ? "text-amber-400 group-hover:text-white"
+                : isDarkNav
+                ? "text-white group-hover:text-amber-300"
+                : "text-slate-900 group-hover:text-slate-700"
+            }`}>
               PECULIAR
             </span>
             <span className={`text-[10px] tracking-[0.2em] font-sans font-bold px-1.5 py-0.5 rounded ${
-              isLuxuryPage ? "bg-amber-400/10 text-amber-400 border border-amber-400/20" : "bg-slate-900 text-white"
+              isLuxuryPage
+                ? "bg-amber-400/10 text-amber-400 border border-amber-400/20"
+                : isDarkNav
+                ? "bg-amber-400/20 text-amber-300 border border-amber-400/30"
+                : "bg-slate-900 text-white"
             }`}>
               AESTHETICS
             </span>
@@ -89,7 +99,9 @@ export default function Navbar() {
         <div className="flex lg:hidden">
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-md p-2"
+            className={`inline-flex items-center justify-center rounded-md p-2 ${
+              isDarkNav ? "text-white hover:text-white/80" : "text-slate-900 hover:text-slate-600"
+            }`}
             onClick={() => setMobileMenuOpen(true)}
           >
             <Menu className="h-6 w-6" aria-hidden="true" />
@@ -103,8 +115,16 @@ export default function Navbar() {
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
               onMouseEnter={() => setDropdownOpen(true)}
-              className={`flex items-center gap-1 text-sm font-semibold hover:opacity-85 transition-opacity ${
-                dropdownOpen ? (isLuxuryPage ? "text-amber-400" : "text-blue-600") : ""
+              className={`flex items-center gap-1 text-sm font-semibold transition-colors ${
+                dropdownOpen
+                  ? isLuxuryPage
+                    ? "text-amber-400"
+                    : isDarkNav
+                    ? "text-amber-300"
+                    : "text-blue-600"
+                  : isDarkNav
+                  ? "text-white hover:text-amber-300 drop-shadow-xs"
+                  : "text-slate-800 hover:text-blue-600"
               }`}
             >
               Properties
@@ -165,12 +185,27 @@ export default function Navbar() {
             </AnimatePresence>
           </div>
 
-          <Link href="/listings" className="text-sm font-semibold hover:opacity-85 transition-opacity">
+          <Link
+            href="/listings"
+            className={`text-sm font-semibold transition-colors ${
+              isDarkNav
+                ? "text-white hover:text-amber-300 drop-shadow-xs"
+                : "text-slate-800 hover:text-blue-600"
+            }`}
+          >
             All Listings
           </Link>
 
           {navigation.map((item) => (
-            <Link key={item.name} href={item.href} className="text-sm font-semibold hover:opacity-85 transition-opacity">
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`text-sm font-semibold transition-colors ${
+                isDarkNav
+                  ? "text-white hover:text-amber-300 drop-shadow-xs"
+                  : "text-slate-800 hover:text-blue-600"
+              }`}
+            >
               {item.name}
             </Link>
           ))}
@@ -182,7 +217,11 @@ export default function Navbar() {
           <Link
             href="/favorites"
             className={`relative p-2 transition-all hover:scale-110 ${
-              isLuxuryPage ? "text-amber-400 hover:text-white" : scrolled ? "text-slate-500 hover:text-red-500" : "text-slate-500 hover:text-red-500"
+              isLuxuryPage
+                ? "text-amber-400 hover:text-white"
+                : isDarkNav
+                ? "text-white/90 hover:text-white"
+                : "text-slate-600 hover:text-red-500"
             }`}
             title="Saved Favorites"
           >
@@ -198,11 +237,15 @@ export default function Navbar() {
           <Link
             href="/compare"
             className={`relative p-2 transition-all hover:scale-110 ${
-              isLuxuryPage ? "text-amber-400 hover:text-white" : scrolled ? "text-slate-500 hover:text-slate-900" : "text-slate-500 hover:text-slate-900"
+              isLuxuryPage
+                ? "text-amber-400 hover:text-white"
+                : isDarkNav
+                ? "text-white/90 hover:text-white"
+                : "text-slate-600 hover:text-slate-900"
             }`}
             title="Compare Properties"
           >
-            <Scale className={`h-5 w-5 ${compareList.length > 0 && mounted ? "text-blue-600" : ""}`} />
+            <Scale className={`h-5 w-5 ${compareList.length > 0 && mounted ? (isDarkNav ? "text-amber-300" : "text-blue-600") : ""}`} />
             {mounted && compareList.length > 0 && (
               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[9px] font-bold text-white shadow-xs">
                 {compareList.length}
@@ -225,31 +268,45 @@ export default function Navbar() {
 
               <Link
                 href="/profile"
-                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-2xs font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
+                className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-2xs font-extrabold uppercase tracking-wider transition-colors shadow-2xs ${
+                  isDarkNav
+                    ? "border border-white/20 bg-slate-900/60 backdrop-blur-md text-white hover:bg-slate-900"
+                    : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                }`}
               >
-                <User className="h-3.5 w-3.5 text-blue-600" />
+                <User className="h-3.5 w-3.5 text-blue-500" />
                 Profile
               </Link>
 
               <Link
                 href="/listings/my-listings"
-                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-2xs font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
+                className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-2xs font-extrabold uppercase tracking-wider transition-colors shadow-2xs ${
+                  isDarkNav
+                    ? "border border-white/20 bg-slate-900/60 backdrop-blur-md text-white hover:bg-slate-900"
+                    : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                }`}
               >
-                <FileText className="h-3.5 w-3.5 text-blue-600" />
+                <FileText className="h-3.5 w-3.5 text-blue-500" />
                 My Listings
               </Link>
 
               <Link
                 href="/listings/new"
-                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-2xs font-extrabold uppercase tracking-wider text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
+                className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-2xs font-extrabold uppercase tracking-wider transition-colors shadow-2xs ${
+                  isDarkNav
+                    ? "border border-white/20 bg-slate-900/60 backdrop-blur-md text-white hover:bg-slate-900"
+                    : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                }`}
               >
-                <PlusCircle className="h-3.5 w-3.5 text-blue-600" />
+                <PlusCircle className="h-3.5 w-3.5 text-blue-500" />
                 Submit Listing
               </Link>
 
               <button
                 onClick={() => signOut()}
-                className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                className={`p-2 transition-colors ${
+                  isDarkNav ? "text-white/80 hover:text-red-400" : "text-slate-400 hover:text-red-600"
+                }`}
                 title="Log Out"
               >
                 <LogOut className="h-4.5 w-4.5" />
@@ -261,6 +318,8 @@ export default function Navbar() {
               className={`rounded-full px-5 py-2 text-xs font-bold tracking-wider uppercase shadow-md transition-smooth hover:scale-105 active:scale-95 ${
                 isLuxuryPage
                   ? "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold"
+                  : isDarkNav
+                  ? "bg-white text-slate-950 hover:bg-amber-300 hover:text-slate-950 font-bold shadow-lg"
                   : "bg-slate-900 text-white hover:bg-slate-800"
               }`}
             >
